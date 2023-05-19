@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, db } from '../misc/firebase';
 import { child, get, ref } from 'firebase/database';
+import logoff from '../misc/logOut';
 
 const profileContext = createContext();
 
@@ -13,9 +14,8 @@ export const ProfileProvider = ({ children }) => {
             if (authObj) {
 
                 let userProfileData;
-
                 // Fetch Name And Profile Pic From DataBase
-                get(child(ref(db), "users/" + authObj.uid)).then((snapshot) => {
+                get(child(ref(db), "admins/" + authObj.uid)).then((snapshot) => {
                     const user = snapshot.val();
 
                     if (user) {
@@ -32,15 +32,8 @@ export const ProfileProvider = ({ children }) => {
                         throw Object.assign(new Error('Undef'), { code: 0 });
                     }
                 }).catch((e) => {
-                    userProfileData = {
-                        fullName: "",
-                        profilePic: "",
-                        uid: authObj.uid,
-                        email: authObj.email,
-                    }
-
-                    setProfile(userProfileData);
-                    setisLoading(false);
+                    // Logout
+                    logoff();
                 });
             } else {
                 setProfile(null);

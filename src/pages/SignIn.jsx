@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { auth } from '../misc/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField, Typography } from '@mui/material';
 import logo from '../images/logo.png'
 import { Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { emailValidator, passwordValidator } from '../misc/emailPasswordValidator';
@@ -65,6 +65,7 @@ function SignIn() {
     setIsLoginInProgress(true);
     signInWithEmailAndPassword(auth, userFormData.email, userFormData.password)
       .then((userCredential) => {
+        setIsLoginInProgress(false);
         // Do Nothing - Page will be Auto Redirected To DashBoard
       })
       .catch((error) => {
@@ -106,6 +107,10 @@ function SignIn() {
           width={150}
           component="img"
           src={logo} />
+
+        <Typography sx={{ color: '#1976d2' }}>
+          Admin
+        </Typography>
 
         <Box component="form" onSubmit={onUserSignIn} noValidate sx={{ mt: 1 }}>
           <TextField

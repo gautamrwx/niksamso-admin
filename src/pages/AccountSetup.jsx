@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { ref, update, push, child, get } from 'firebase/database';
+import { ref, update, child, get } from 'firebase/database';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, Snackbar, TextField, Typography } from '@mui/material';
 import { db, auth } from '../misc/firebase';
 import md5 from 'md5';
 import logo from '../images/logo.png'
 import { PersonAddAlt, Visibility, VisibilityOff } from '@mui/icons-material';
 import { emailValidator, passwordValidator } from '../misc/emailPasswordValidator';
-
-
 
 function AccountSetup() {
   const [userFormData, setUserFormData] = useState({
@@ -76,15 +74,12 @@ function AccountSetup() {
     // == proceed to login after successful validation == //
     setIsSignUpInProgress(true);
 
-    // Step 2. Check If Current User is in Unregisted List
+    // Step 2. Check If Current Admin is in Unregisted List
     let unRegisteredUserKey = md5(userFormData.email); // We using Email(md5) as primary key of Firebase 
 
-    get(child(ref(db), 'nonRegistedUsers/' + unRegisteredUserKey)).then((snapshot) => {
+    get(child(ref(db), 'nonRegistedAdmins/' + unRegisteredUserKey)).then((snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Get Village Array (for Cureent User) From Response 
-        const assignedVillages = data.assignedVillages ? data.assignedVillages : [];
-
         // ---- Sign Up for A New User ---- //
         createUserWithEmailAndPassword(auth, userFormData.email, userFormData.password)
           .then((userCredential) => {
@@ -92,9 +87,9 @@ function AccountSetup() {
             const user = userCredential.user;
 
             //-----------------------------------
-            // Assign User Data and Mapping to Database
+            // Assign Admin Data to Database
             //-----------------------------------
-            initializaUserAndMapVillages(unRegisteredUserKey, user, assignedVillages);
+            initializeAdmin(unRegisteredUserKey, user);
 
             // On Succesfull Sign In User Will Directly Go To Dashboard
           })
@@ -106,13 +101,13 @@ function AccountSetup() {
       }
       else {
         setIsSignUpInProgress(false);
-        onShowSnackbarMessage('This Email Is Not Assigned By Admin');
+        onShowSnackbarMessage('This Email Is Not Assigned In Database');
         setuserInputValidation(values => ({ ...values, isCorrectEmail: false }));
       }
     });
   }
 
-  const initializaUserAndMapVillages = (unRegisteredUserKey, user, assignedVillages) => {
+  const initializeAdmin = (unRegisteredUserKey, user) => {
     const updates = {}
 
     // 1. Assign User Profile Information
@@ -120,30 +115,16 @@ function AccountSetup() {
       fullName: "Unknown",
       profilePic: "",
     };
-    updates['/users/' + user.uid] = profileInfo
+    updates['/admins/' + user.uid] = profileInfo
 
-    // 2. Assign Villages
-    const newVillageGroupKey = push(child(ref(db), 'villageGroupList')).key;
-
-    assignedVillages.forEach(villageName => {
-      const newVillageKey = push(child(ref(db), 'villageGroupList/' + newVillageGroupKey)).key;
-      updates['/villageGroupList/' + newVillageGroupKey + '/' + newVillageKey] = {
-        villageName,
-        mappingSatus: false
-      };
-    });
-
-    // 3. Map User With villageGroupList
-    updates['/mapping_users_villageGroupList/' + user.uid] = newVillageGroupKey;
-
-    // 4. User Has been Regitered , Now Delete Unregistered User from Database 
-    updates['/nonRegistedUsers/' + unRegisteredUserKey] = null;
+    // 2. Admin Has been Regitered , Now Delete Unregistered Admin from Database 
+    updates['/nonRegistedAdmins/' + unRegisteredUserKey] = null;
 
     // <==== | Update All Data In Single Shot | ====>
     update(ref(db), updates).then(x => {
       // Do Nothing
     }).catch((error) => {
-      alert("User Created Without Database | Contact Admin To register Again");
+      alert("Error !! Admin Created Without Database");
     });
   }
 
@@ -161,6 +142,11 @@ function AccountSetup() {
           width={150}
           component="img"
           src={logo} />
+
+        <Typography sx={{ color: '#1976d2' }}>
+          Admin
+        </Typography>
+
         <Box component="form" onSubmit={onUserSignUp} noValidate sx={{ mt: 1 }}>
           <TextField
             margin='normal'
