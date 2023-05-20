@@ -2,7 +2,6 @@ import { Routes, Route } from 'react-router-dom';
 import SignIn from './pages/SignIn'
 import AccountSetup from './pages/AccountSetup';
 import Dashboard from './pages/Dashboard';
-import ManageVillageMembers from './pages/ManageVillageMembers';
 import MyAccount from './pages/MyAccount';
 
 import PrivateRoute from './components/PrivateRoute';
@@ -52,7 +51,6 @@ function App() {
         {/* Secure Private Routes */}
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/ManageVillageMembers" element={<ManageVillageMembers />} />
           <Route path="/MyAccount" element={<MyAccount />} />
         </Route>
       </Routes >
