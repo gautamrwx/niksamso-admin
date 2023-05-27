@@ -7,8 +7,8 @@ const linkPageMappingHelper = (currentPagePath) => {
             visibleInNavBar: true
         },
         {
-            linkPath: "/ManageVillageMembers",
-            linkPageName: "Manage Village Members",
+            linkPath: "/UploadNewUsers",
+            linkPageName: "Upload New Users",
             isLinkActive: false,
             visibleInNavBar: true
         },

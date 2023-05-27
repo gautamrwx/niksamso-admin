@@ -3,12 +3,13 @@ import SignIn from './pages/SignIn'
 import AccountSetup from './pages/AccountSetup';
 import Dashboard from './pages/Dashboard';
 import MyAccount from './pages/MyAccount';
-
+import UploadNewUsers from './pages/UploadNewUsers';
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
 import { ProfileProvider } from './context/profile.context';
 import './styles/style.css'
 import { useEffect } from 'react';
+import { UsersAndVillagesProvider } from './context/usersAndVillages.context';
 
 function App() {
 
@@ -41,19 +42,22 @@ function App() {
 
   return (
     <ProfileProvider>
-      <Routes >
-        {/* Public Routes  */}
-        <Route element={<PublicRoute />}>
-          <Route path="/SignIn" element={<SignIn />} exact />
-          <Route path="/AccountSetup" element={<AccountSetup />} exact />
-        </Route>
+      <UsersAndVillagesProvider>
+        <Routes >
+          {/* Public Routes  */}
+          <Route element={<PublicRoute />}>
+            <Route path="/SignIn" element={<SignIn />} exact />
+            <Route path="/AccountSetup" element={<AccountSetup />} exact />
+          </Route>
 
-        {/* Secure Private Routes */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/MyAccount" element={<MyAccount />} />
-        </Route>
-      </Routes >
+          {/* Secure Private Routes */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/UploadNewUsers" element={<UploadNewUsers />} />
+            <Route path="/MyAccount" element={<MyAccount />} />
+          </Route>
+        </Routes >
+      </UsersAndVillagesProvider>
     </ProfileProvider>
   );
 }

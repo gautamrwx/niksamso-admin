@@ -8,6 +8,7 @@ import UserProfileActionAvatar from './innterComponents/UserProfileActionAvatar'
 import { useLocation } from 'react-router-dom';
 import linkPageMappingHelper from '../../misc/linkPageMappingHelper';
 import HeaderLogoAndText from './innterComponents/HeaderLogoAndText';
+import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 
 function DashboardAppBar({
     props,
@@ -18,6 +19,7 @@ function DashboardAppBar({
     selectedTabBarIndex,
     setSelectedTabBarIndex }) {
 
+    const {users , villages} = useUsersAndVillages();
     // Container Will Use in App Drawer
     const { window } = props;
     const container = window !== undefined ? () => window().document.body : undefined;
@@ -53,28 +55,48 @@ function DashboardAppBar({
                         <DehazeIcon />
                     </IconButton>
 
-                    <HeaderLogoAndText isDashBoardAppBar='true' currentPageName={currentPageName} />
+                    <HeaderLogoAndText
+                        isDashBoardAppBar='true'
+                        currentPageName={currentPageName}
+                    />
 
                     {/*Fill Empty Midddle Space*/}
                     <Box sx={{ flexGrow: 1 }}></Box>
 
-                    {/* ==> Village Selection DropDown  */}
-                    <Box sx={{ width: { xs: 3 / 5, sm: 240, md: 340 }, ml: 1 }}>
-                        <FormControl className='selectItemOnAppBar' fullWidth size="small">
-                            <InputLabel>Village</InputLabel>
-                            <Select
-                                disabled={isLoadingVillageList}
-                                value={selectedVillageKey}
-                                label="Village"
-                                onChange={handleVillageSelectionChange}
-                            >
-                                {villageDropDownData && villageDropDownData.map(vill => <MenuItem key={vill.key} value={vill.key}>{vill.val}</MenuItem>)}
-                            </Select>
-                        </FormControl>
+                        {/* ==> User Selection DropDown  */}
+                        <Box sx={{ width: { xs: 3 / 5, sm: 150, md: 230 }, ml: 1 }}>
+                            <FormControl className='selectItemOnAppBar' fullWidth size="small">
+                                <InputLabel>Incharge</InputLabel>
+                                <Select
+                                    disabled={isLoadingVillageList}
+                                    value={selectedVillageKey}
+                                    label="Incharge"
+                                    onChange={handleVillageSelectionChange}
+                                >
+                                    {users && users.map(user => <MenuItem key={user.key} value={user.key}>{user.email}</MenuItem>)}
+                                </Select>
+                            </FormControl>
 
-                        {isLoadingVillageList && <LinearProgress />}
-                    </Box >
+                            {isLoadingVillageList && <LinearProgress />}
+                        </Box >
 
+                        {/* ==> Village Selection DropDown  */}
+                        <Box sx={{ width: { xs: 3 / 5, sm: 150, md: 230 }, ml: 1 }}>
+                            <FormControl className='selectItemOnAppBar' fullWidth size="small">
+                                <InputLabel>Village</InputLabel>
+                                <Select
+                                    disabled={isLoadingVillageList}
+                                    value={selectedVillageKey}
+                                    label="Village"
+                                    onChange={handleVillageSelectionChange}
+                                >
+                                    {villages && villages.map(vill => <MenuItem key={vill.key} value={vill.key}>{vill.villageName}</MenuItem>)}
+                                </Select>
+                            </FormControl>
+
+                            {isLoadingVillageList && <LinearProgress />}
+                        </Box >
+                    
                     {/* ==> User Profile Avatar  */}
                     <UserProfileActionAvatar />
                 </Toolbar>

@@ -14,6 +14,7 @@ export const ProfileProvider = ({ children }) => {
             if (authObj) {
 
                 let userProfileData;
+                
                 // Fetch Name And Profile Pic From DataBase
                 get(child(ref(db), "admins/" + authObj.uid)).then((snapshot) => {
                     const user = snapshot.val();

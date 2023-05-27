@@ -1,5 +1,5 @@
 import { Box, Card, CardActions, CardContent, CircularProgress, Grid, Button, Typography } from '@mui/material';
-import SimpleAppBar from '../components/AppBarComponent/SimpleAppBar';
+import DashboardAppBar from '../components/AppBarComponent/DashboardAppBar';
 import { useProfile } from '../context/profile.context';
 import { useEffect, useState } from 'react';
 import { child, get, push, ref, update } from 'firebase/database';
@@ -91,7 +91,7 @@ function Dashboard(props) {
 
     return (
         <>
-            <SimpleAppBar props={props} />
+            <DashboardAppBar props={props} />
 
             {isDataLoading && <Box
                 display="grid"
