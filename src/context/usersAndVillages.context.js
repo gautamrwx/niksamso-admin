@@ -22,10 +22,7 @@ export const UsersAndVillagesProvider = ({ children }) => {
 
             if (data) {
                 const userList = [];
-                Object.keys(data).map(x => {
-                    userList.push({ key: x, ...data[x] });
-                });
-
+                Object.keys(data).map(x => userList.push({ key: x, ...data[x] }));
                 setUsers(userList);
             }
         });
@@ -37,15 +34,13 @@ export const UsersAndVillagesProvider = ({ children }) => {
 
             if (data) {
                 const villages = [];
-                Object.keys(data).map(villGroupKey => {
-                    Object.keys(data[villGroupKey]).map(villageKey => {
-                        villages.push({ key: villageKey, villGroupKey: villGroupKey, ...data[villGroupKey][villageKey] });
-                    })
-
-                });
+                Object.keys(data).map(villGroupKey => (
+                    Object.keys(data[villGroupKey]).map(villageKey =>
+                        villages.push({ key: villageKey, villGroupKey: villGroupKey, ...data[villGroupKey][villageKey] })
+                    )
+                ));
 
                 setVillages(villages);
-                debugger;
             }
         });
 

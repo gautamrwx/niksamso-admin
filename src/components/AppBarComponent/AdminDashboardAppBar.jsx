@@ -1,4 +1,4 @@
-import { AppBar, Box, FormControl, IconButton, InputLabel, LinearProgress, MenuItem, Select, Tab, Tabs, Toolbar } from '@mui/material';
+import { AppBar, Autocomplete, Box, IconButton, Tab, Tabs, TextField, Toolbar } from '@mui/material';
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 import GroupIcon from '@mui/icons-material/Group';
@@ -12,14 +12,13 @@ import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 
 function DashboardAppBar({
     props,
-    villageDropDownData,
-    selectedVillageKey,
-    isLoadingVillageList,
     handleVillageSelectionChange,
+    setIsVillageSelected,
     selectedTabBarIndex,
     setSelectedTabBarIndex }) {
 
-    const {users , villages} = useUsersAndVillages();
+    const { users, villages } = useUsersAndVillages();
+
     // Container Will Use in App Drawer
     const { window } = props;
     const container = window !== undefined ? () => window().document.body : undefined;
@@ -29,6 +28,90 @@ function DashboardAppBar({
     const [isDrowerOpen, setIsDrawerOpen] = useState(false);
     const [linkPageMappings, setLinkPageMappings] = useState([]);
     const [currentPageName, setCurrentPageName] = useState(null);
+
+    const [userDropdownListOption, setUserDropdownListOption] = useState([]);
+    const [villageDropdownListOption, setVillageDropdownListOption] = useState([]);
+    const [selectedDDUser, setSelectedDDUser] = useState(null);
+    const [selectedDDVillage, setSelectedDDVillage] = useState(null);
+
+    useEffect(() => {
+        // Set Users Data in dropDown 
+        // comst ff = selectedDDUser
+        setUserDropdownListOption(users.map((option) => {
+            const firstLetter = option.email[0].toUpperCase();
+            return {
+                firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
+                ...option,
+            };
+        }));
+
+        // Set Villages Data in Dropdown
+        setVillageDropdownListOption(villages.map((option) => {
+            const firstLetter = option.villageName[0].toUpperCase();
+            return {
+                firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
+                ...option,
+            };
+        }));
+
+    }, [users, villages]);
+
+    const setVillListDropDown = (mappedVillGroupKey = null) => {
+        const filteredVillages =
+            mappedVillGroupKey
+                ? villages.filter(x => x.villGroupKey === mappedVillGroupKey)
+                : villages;
+
+        const villDropdownListOption = filteredVillages.map((option) => {
+            const firstLetter = option.villageName[0].toUpperCase();
+            return {
+                firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
+                ...option,
+            };
+        })
+
+        setVillageDropdownListOption(villDropdownListOption);
+
+        // Select Last Selected Item
+        if (selectedDDVillage) {
+            const lastSelectedItemIndex = villDropdownListOption.findIndex(village => village.key === selectedDDVillage.key);
+
+            if (lastSelectedItemIndex !== -1) {
+                setSelectedDDVillage(villDropdownListOption[lastSelectedItemIndex]);
+            } else {
+                setSelectedDDVillage(null);
+                handleVillageSelectionChange(null);
+                setIsVillageSelected(false);
+            }
+        }
+    }
+
+    const onUserSelectionChange = (event, value, reason) => {
+        switch (reason) {
+            case 'clear':
+                setSelectedDDUser(null);
+                setVillListDropDown();
+                break;
+            case 'selectOption':
+                setSelectedDDUser(value);
+                setVillListDropDown(value.mappedVillGroupKey);
+                break;
+            default:
+                break;
+        }
+    }
+
+    const onVillageSelectionChange = (event, value, reason) => {
+        switch (reason) {
+            case 'selectOption':
+                setSelectedDDVillage(value);
+                handleVillageSelectionChange(value.partyPeopleMapping);
+                setIsVillageSelected(true);
+                break;
+            default:
+                break;
+        }
+    }
 
     // Set Page-Path Name and Link to help Navigation Bar 
     useEffect(() => {
@@ -63,40 +146,36 @@ function DashboardAppBar({
                     {/*Fill Empty Midddle Space*/}
                     <Box sx={{ flexGrow: 1 }}></Box>
 
-                        {/* ==> User Selection DropDown  */}
-                        <Box sx={{ width: { xs: 3 / 5, sm: 150, md: 230 }, ml: 1 }}>
-                            <FormControl className='selectItemOnAppBar' fullWidth size="small">
-                                <InputLabel>Incharge</InputLabel>
-                                <Select
-                                    disabled={isLoadingVillageList}
-                                    value={selectedVillageKey}
-                                    label="Incharge"
-                                    onChange={handleVillageSelectionChange}
-                                >
-                                    {users && users.map(user => <MenuItem key={user.key} value={user.key}>{user.email}</MenuItem>)}
-                                </Select>
-                            </FormControl>
+                    {/* ==> User Selection DropDown  */}
+                    <Box display='flex' flexDirection='row' sx={{ width: { xs: 1, sm: 6 / 11, md: 400, lg: 500 }, ml: 1 }}>
+                        <Autocomplete
+                            fullWidth
+                            size='small'
+                            className='selectItemOnAppBar'
+                            blurOnSelect={true}
+                            value={selectedDDUser}
+                            onChange={onUserSelectionChange}
+                            options={userDropdownListOption.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+                            groupBy={(option) => option.firstLetter}
+                            getOptionLabel={(option) => option.email}
+                            renderInput={(params) => <TextField {...params} label="Incharge" />}
+                        />
 
-                            {isLoadingVillageList && <LinearProgress />}
-                        </Box >
+                        <Autocomplete
+                            fullWidth
+                            size='small'
+                            sx={{ ml: 1 }}
+                            className='selectItemOnAppBar'
+                            value={selectedDDVillage}
+                            disableClearable
+                            onChange={onVillageSelectionChange}
+                            options={villageDropdownListOption.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+                            groupBy={(option) => option.firstLetter}
+                            getOptionLabel={(option) => option.villageName}
+                            renderInput={(params) => <TextField {...params} label="Villages" />}
+                        />
+                    </Box >
 
-                        {/* ==> Village Selection DropDown  */}
-                        <Box sx={{ width: { xs: 3 / 5, sm: 150, md: 230 }, ml: 1 }}>
-                            <FormControl className='selectItemOnAppBar' fullWidth size="small">
-                                <InputLabel>Village</InputLabel>
-                                <Select
-                                    disabled={isLoadingVillageList}
-                                    value={selectedVillageKey}
-                                    label="Village"
-                                    onChange={handleVillageSelectionChange}
-                                >
-                                    {villages && villages.map(vill => <MenuItem key={vill.key} value={vill.key}>{vill.villageName}</MenuItem>)}
-                                </Select>
-                            </FormControl>
-
-                            {isLoadingVillageList && <LinearProgress />}
-                        </Box >
-                    
                     {/* ==> User Profile Avatar  */}
                     <UserProfileActionAvatar />
                 </Toolbar>
@@ -128,4 +207,4 @@ function DashboardAppBar({
     )
 }
 
-export default DashboardAppBar
+export default DashboardAppBar;
