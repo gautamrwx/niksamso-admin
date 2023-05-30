@@ -1,4 +1,4 @@
-import { AppBar, Autocomplete, Box, IconButton, Tab, Tabs, TextField, Toolbar } from '@mui/material';
+import { AppBar, Autocomplete, Box, IconButton, Popper, Tab, Tabs, TextField, Toolbar } from '@mui/material';
 import DehazeIcon from '@mui/icons-material/Dehaze';
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 import GroupIcon from '@mui/icons-material/Group';
@@ -123,6 +123,19 @@ function DashboardAppBar({
         setCurrentPageName(pageName.linkPageName);
     }, [location.pathname]);
 
+
+    /**----- UI Component [Start]---- */
+    const styles = (theme) => ({
+        popper: {
+            width: "fit-content"
+        }
+    });
+    /**----- UI Component [END]---- */
+
+    const PopperMy = function (props) {
+        return <Popper {...props} style={styles.popper} placement="bottom-start" />;
+    };
+
     return (
         <>
             <AppBar component="nav" sx={{ boxShadow: 'none' }}>
@@ -147,9 +160,10 @@ function DashboardAppBar({
                     <Box sx={{ flexGrow: 1 }}></Box>
 
                     {/* ==> User Selection DropDown  */}
-                    <Box display='flex' flexDirection='row' sx={{ width: { xs: 1, sm: 6 / 11, md: 400, lg: 500 }, ml: 1 }}>
+                    <Box display='flex' flexDirection='row' sx={{ width: { xs: 1, sm: 6 / 11, md: 450, lg: 500 }, ml: 1 }}>
                         <Autocomplete
                             fullWidth
+                            PopperComponent={PopperMy}
                             size='small'
                             className='selectItemOnAppBar'
                             blurOnSelect={true}
@@ -164,6 +178,7 @@ function DashboardAppBar({
                         <Autocomplete
                             fullWidth
                             size='small'
+                            PopperComponent={PopperMy}
                             sx={{ ml: 1 }}
                             className='selectItemOnAppBar'
                             value={selectedDDVillage}

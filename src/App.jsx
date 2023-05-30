@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
 import SignIn from './pages/SignIn'
-import AccountSetup from './pages/AccountSetup';
 import Dashboard from './pages/Dashboard';
 import MyAccount from './pages/MyAccount';
 import UploadNewUsers from './pages/UploadNewUsers';
@@ -47,7 +46,6 @@ function App() {
           {/* Public Routes  */}
           <Route element={<PublicRoute />}>
             <Route path="/SignIn" element={<SignIn />} exact />
-            <Route path="/AccountSetup" element={<AccountSetup />} exact />
           </Route>
 
           {/* Secure Private Routes */}
