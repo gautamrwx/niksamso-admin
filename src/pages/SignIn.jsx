@@ -31,10 +31,6 @@ function SignIn() {
     setAlertMessage(message);
   }
 
-  const onHideSnackbarMessage = () => {
-    setIsSnackbarOpen(false);
-  }
-
   const onUserSignIn = (event) => {
     event.preventDefault();
 
@@ -175,12 +171,12 @@ function SignIn() {
             horizontal: 'center'
           }}
           open={isSnackbarOpen}
-          onClose={onHideSnackbarMessage}
+          onClose={() => setIsSnackbarOpen(false)}
         >
-          <Alert severity="error">{alertMessage}</Alert>
-        </Snackbar>
-      </Box>
-    </Container>
+        <Alert severity="error">{alertMessage}</Alert>
+      </Snackbar>
+    </Box>
+    </Container >
   );
 }
 
