@@ -74,7 +74,7 @@ function DashboardAppBar({
 
         // Select Last Selected Item
         if (selectedDDVillage) {
-            const lastSelectedItemIndex = villDropdownListOption.findIndex(village => village.key === selectedDDVillage.key);
+            const lastSelectedItemIndex = villDropdownListOption.findIndex(village => village.villageKey === selectedDDVillage.villageKey);
 
             if (lastSelectedItemIndex !== -1) {
                 setSelectedDDVillage(villDropdownListOption[lastSelectedItemIndex]);
@@ -105,7 +105,7 @@ function DashboardAppBar({
         switch (reason) {
             case 'selectOption':
                 setSelectedDDVillage(value);
-                handleVillageSelectionChange(value.partyPeopleMapping);
+                handleVillageSelectionChange(value.mappedPartyPeoplesKey);
                 setIsVillageSelected(true);
                 break;
             default:

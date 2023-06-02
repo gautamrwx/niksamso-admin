@@ -14,14 +14,15 @@ export const ProfileProvider = ({ children }) => {
             if (authObj) {
 
                 let userProfileData;
-                
+
                 // Fetch Name And Profile Pic From DataBase
                 get(child(ref(db), "admins/" + authObj.uid)).then((snapshot) => {
                     const user = snapshot.val();
 
                     if (user) {
                         userProfileData = {
-                            ...user,
+                            fullName: user.fullName,
+                            profilePic: user.profilePic,
                             uid: authObj.uid,
                             email: authObj.email,
                         }
@@ -33,8 +34,15 @@ export const ProfileProvider = ({ children }) => {
                         throw Object.assign(new Error('Undef'), { code: 0 });
                     }
                 }).catch((e) => {
-                    // Logout
-                    logoff();
+                    userProfileData = {
+                        fullName: "Unknown",
+                        profilePic: "",
+                        uid: authObj.uid,
+                        email: authObj.email,
+                    }
+
+                    setProfile(userProfileData);
+                    setisLoading(false);
                 });
             } else {
                 setProfile(null);

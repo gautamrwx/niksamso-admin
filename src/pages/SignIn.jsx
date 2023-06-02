@@ -5,7 +5,6 @@ import { Alert, Box, Button, CircularProgress, Container, FormControl, IconButto
 import logo from '../images/logo.png'
 import { Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import { emailValidator, passwordValidator } from '../misc/emailPasswordValidator';
-import { Link } from 'react-router-dom';
 
 function SignIn() {
   const [userFormData, setUserFormData] = useState({
@@ -169,17 +168,6 @@ function SignIn() {
             {!isLoginInProgress ? 'Log In' : <CircularProgress disableShrink />}
           </Button>
         </Box>
-
-        <Button
-          component={Link}
-          to="/AccountSetup"
-          type="button"
-          variant="outlined"
-          fullWidth
-          sx={{ mt: 3 }}
-        >
-          Account Setup
-        </Button>
 
         <Snackbar
           anchorOrigin={{

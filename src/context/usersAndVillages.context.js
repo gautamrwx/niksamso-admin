@@ -36,7 +36,7 @@ export const UsersAndVillagesProvider = ({ children }) => {
                 const villages = [];
                 Object.keys(data).map(villGroupKey => (
                     Object.keys(data[villGroupKey]).map(villageKey =>
-                        villages.push({ key: villageKey, villGroupKey: villGroupKey, ...data[villGroupKey][villageKey] })
+                        villages.push({ villageKey, villGroupKey, ...data[villGroupKey][villageKey] })
                     )
                 ));
 

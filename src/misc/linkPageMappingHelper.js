@@ -13,6 +13,12 @@ const linkPageMappingHelper = (currentPagePath) => {
             visibleInNavBar: true
         },
         {
+            linkPath: "/UploadVillageInformation",
+            linkPageName: "Upload Village Info",
+            isLinkActive: false,
+            visibleInNavBar: true
+        },
+        {
             linkPath: "/MyAccount",
             linkPageName: "My Account",
             isLinkActive: false,
