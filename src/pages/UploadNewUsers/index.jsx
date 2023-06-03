@@ -28,6 +28,8 @@ function UploadNewUsers(props) {
     const [isVisibleUploadModal, SetIsVisibleUploadModal] = useState(false);
     const [isVisibleHelpModal, SetIsVisibleHelpModal] = useState(false);
     const [preparedUploadData, setPreparedUploadData] = useState([]);
+    const [btnClosePopupDisabled, setBtnClosePopupDisabled] = useState(false);
+    const [btnSubmitPopupDisabled, setBtnSubmitPopupDisabled] = useState(false);
 
     const validateInputCSV = (inputCSVLines) => {
         inputCSVLines = inputCSVLines.slice(1); // Delete First Line
@@ -119,8 +121,13 @@ function UploadNewUsers(props) {
             return [...prevArray]
         });
 
+        // Disable CloseBTN And SubmitBTN
+        setBtnClosePopupDisabled(true);
+        setBtnSubmitPopupDisabled(true);
+
         // Execute Operation by picking data one by one
-        for (let i = 0; i < preparedUploadData.length; i++) {
+        const dataSize = preparedUploadData.length;
+        for (let i = 0; i < dataSize; i++) {
             const newUserData = preparedUploadData[i];
 
             // +Status+
@@ -168,8 +175,14 @@ function UploadNewUsers(props) {
                         prevArray[i].toolTipMessge = '';
                         return [...prevArray];
                     });
+                    (i === dataSize-1) && setBtnClosePopupDisabled(false);
                 }).catch((error) => {
-                    alert("User Created Without Database | Contact Admin To register Again");
+                    setPreparedUploadData(prevArray => {
+                        prevArray[i].progressStatus = 'ERROR';
+                        prevArray[i].toolTipMessge = 'User Created But Failed To Update Database';
+                        return [...prevArray];
+                    });
+                    (i === dataSize-1) && setBtnClosePopupDisabled(false);
                 });
             } catch (event) {
                 // +Status+
@@ -178,6 +191,7 @@ function UploadNewUsers(props) {
                     prevArray[i].toolTipMessge = event.code;
                     return [...prevArray];
                 });
+                (i === dataSize-1) && setBtnClosePopupDisabled(false);
             }
         }
     }
@@ -317,6 +331,7 @@ function UploadNewUsers(props) {
 
                             <Box paddingY={1} paddingX={0.5} display='flex'>
                                 <Button
+                                    disabled={btnClosePopupDisabled}
                                     onClick={() => SetIsVisibleUploadModal(false)}
                                     color='error'
                                     fullWidth
@@ -326,6 +341,7 @@ function UploadNewUsers(props) {
                                     Close
                                 </Button>
                                 <Button
+                                    disabled={btnSubmitPopupDisabled}
                                     onClick={startDataUploading}
                                     color='success'
                                     sx={{ ml: 1 }}
@@ -355,21 +371,20 @@ function UploadNewUsers(props) {
                                 <Typography sx={{
                                     fontWeight: 'bold',
                                     margin: '11px 22px',
-                                    fontSize:20
+                                    fontSize: 20
                                 }} >
                                     demo-file.csv
                                 </Typography>
                                 <Typography sx={{
                                     fontWeight: 'bold',
                                     margin: '11px 22px',
-                                    fontSize:14,
-                                    color:'red'
+                                    fontSize: 14,
+                                    color: 'red'
                                 }} >
                                     * Upload file in .CSV format only
                                 </Typography>
 
                                 <Box
-
                                     component="img"
                                     src={inchargeCsvUplDemo}
                                 />
