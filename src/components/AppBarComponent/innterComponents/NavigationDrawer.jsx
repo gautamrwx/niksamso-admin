@@ -1,4 +1,4 @@
-import { Box, Divider, List, ListItem, ListItemButton, ListItemText, SwipeableDrawer, } from '@mui/material';
+import { Box, Divider, List, ListItem, ListItemButton, ListItemText, SwipeableDrawer, Typography, } from '@mui/material';
 import logo from '../../../images/logo.png'
 import { Link } from 'react-router-dom';
 
@@ -30,7 +30,11 @@ function NavigationDrawer({ linkPageMappings, container, isDrowerOpen, setIsDraw
                     <Box
                         width={130}
                         component="img"
-                        src={logo} />
+                        src={logo}
+                    />
+                    <Typography color={'#1976d2'}>
+                        Admin
+                    </Typography>
                     <Divider />
                     <List>
                         {linkPageMappings.map((item) => (

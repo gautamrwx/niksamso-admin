@@ -1,5 +1,5 @@
 import { Alert, Box, Button, CircularProgress, Modal, Paper, Tooltip, Typography, tooltipClasses } from '@mui/material';
-import SimpleAppBar from '../../components/AppBarComponent/SimpleAppBar';
+import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import { CheckCircleOutline, ErrorOutline, HourglassBottomRounded, Upload } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useState } from 'react';
@@ -231,7 +231,7 @@ function UploadNewUsers(props) {
 
     return (
         <>
-            <SimpleAppBar props={props} />
+            <CustomAppBar props={props} />
 
             <Box
                 display="grid"

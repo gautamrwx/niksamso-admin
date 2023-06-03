@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { child, get, ref } from 'firebase/database';
 import { db } from '../../misc/firebase';
-import AdminDashboardAppBar from '../../components/AppBarComponent/AdminDashboardAppBar';
 import TabPanel from './TabPanel';
 import BlankTextProcessingDisplay from './BlankTextProcessingDisplay';
 import GeneralMembersView from './GeneralMembersView';
@@ -9,6 +8,7 @@ import PartyMembersView from './PartyMembersView';
 import { Box, Container, Drawer, IconButton, List, ListItem, ListItemText, Typography, } from '@mui/material';
 import { Call, Message, WhatsApp } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
+import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 
 function Dashboard(props) {
     const [partyPeoples, setPartyPeoples] = useState(null);
@@ -97,10 +97,12 @@ function Dashboard(props) {
 
     return (
         <>
-            <AdminDashboardAppBar
+            <CustomAppBar
+                rightSideComponent="InchargeAndVillageSelector"
                 props={props}
                 setIsVillageSelected={setIsVillageSelected}
                 handleVillageSelectionChange={handleVillageSelectionChange}
+                tabSelectionBarVisible
                 selectedTabBarIndex={selectedTabBarIndex}
                 setSelectedTabBarIndex={setSelectedTabBarIndex}
             />

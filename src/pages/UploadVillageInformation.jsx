@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Delete, Upload } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useUsersAndVillages } from '../context/usersAndVillages.context';
-import VillageDataUploadAppBar from '../components/AppBarComponent/VillageDataUploadAppBar';
+import CustomAppBar from '../components/AppBarComponent/CustomAppBar';
 import { child, push, ref, update } from 'firebase/database';
 import { db } from '../misc/firebase';
 
@@ -70,7 +70,6 @@ function UploadVillageInformation(props) {
 
     // ---- Start | Firebase Business Logic ---- //  
     const uploadData = (jsonArr, villageKey, villageGroupKey, selectedIndex) => {
-        debugger
         const peopleInformation = getPreapredData(jsonArr);
 
         const updates = {};
@@ -176,8 +175,10 @@ function UploadVillageInformation(props) {
 
     return (
         <>
-            <VillageDataUploadAppBar
+            <CustomAppBar
+                rightSideComponent="InchargeSelector"
                 props={props}
+                selectedDDUser={selectedDDUser}
                 setSelectedDDUser={setSelectedDDUser}
             />
 

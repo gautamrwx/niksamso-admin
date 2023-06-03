@@ -1,10 +1,10 @@
-import SimpleAppBar from '../../components/AppBarComponent/SimpleAppBar';
 import { Alert, Avatar, Box, Button, CircularProgress, Container, FormControl, InputLabel, Modal, OutlinedInput, Paper, Snackbar, TextField, Toolbar } from '@mui/material';
 import { useState } from 'react';
 import { useProfile } from '../../context/profile.context';
 import PasswordChange from './PasswordChange';
 import { ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
+import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 
 function MyAccount(props) {
     const { profile, setProfile } = useProfile();
@@ -61,7 +61,8 @@ function MyAccount(props) {
 
     return (
         <>
-            <SimpleAppBar props={props} />
+            <CustomAppBar props={props} />
+
             <Box
                 sx={{
                     marginTop: 5,

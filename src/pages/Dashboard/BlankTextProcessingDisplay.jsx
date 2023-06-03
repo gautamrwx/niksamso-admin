@@ -4,7 +4,7 @@ function BlankTextProcessingDisplay({
     isVillageSelected,
     isLoadingPartyPeoples
 }) {
-    const Customizetext = ({ children, ...other }) => {
+    const Customizetext = ({ children }) => {
         return (
             <Typography
                 fontWeight='bold'
