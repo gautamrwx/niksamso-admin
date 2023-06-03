@@ -5,7 +5,6 @@ const HeaderLogoAndText = ({
     currentPageName,
     isRightSideComponentOccupied
 }) => {
-    debugger
     return (
         <>
             <Box

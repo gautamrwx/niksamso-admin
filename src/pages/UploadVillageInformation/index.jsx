@@ -2,10 +2,10 @@ import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, Ic
 import { useEffect, useState } from 'react';
 import { Delete, Upload } from '@mui/icons-material';
 import csv from 'csvtojson';
-import { useUsersAndVillages } from '../context/usersAndVillages.context';
-import CustomAppBar from '../components/AppBarComponent/CustomAppBar';
+import { useUsersAndVillages } from '../../context/usersAndVillages.context';
+import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import { child, push, ref, update } from 'firebase/database';
-import { db } from '../misc/firebase';
+import { db } from '../../misc/firebase';
 
 function UploadVillageInformation(props) {
     const { villages } = useUsersAndVillages();
@@ -54,9 +54,9 @@ function UploadVillageInformation(props) {
         });
     }
 
-    const resetMemberMappingStatus = (index, condition) => {
+    const resetVillagePeopleMapping = (index, condition) => {
         setVillageList((prevArray) => {
-            prevArray[index].mappingSatus = condition;
+            prevArray[index].mappedPartyPeoplesKey = condition;
             return [...prevArray];
         });
     }
@@ -69,23 +69,39 @@ function UploadVillageInformation(props) {
     }
 
     // ---- Start | Firebase Business Logic ---- //  
-    const uploadData = (jsonArr, villageKey, villageGroupKey, selectedIndex) => {
+    const uploadData = (jsonArr, villageKey, villGroupKey, selectedIndex) => {
         const peopleInformation = getPreapredData(jsonArr);
 
         const updates = {};
         const newPartyPeopleKey = push(child(ref(db), 'partyPeoples')).key;
         updates['/partyPeoples/' + newPartyPeopleKey] = peopleInformation;
-        updates['/villageGroupList/' + villageGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = newPartyPeopleKey;
+        updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = newPartyPeopleKey;
 
         // <==== | Update All Data In Single Shot | ====>
         update(ref(db), updates).then(x => {
+            resetVillagePeopleMapping(selectedIndex, newPartyPeopleKey)
             toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
-            //resetMemberMappingStatus(selectedIndex, true);
         }).catch((error) => {
             toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
-            alert("Error  Update");
         });
     }
+
+    const handleDeleteVillageMembers = ({ villageKey, villGroupKey, mappedPartyPeoplesKey }, selectedIndex) => {
+        toggleProgressIndicator(selectedIndex, 'DELETE', true);
+
+        const updates = {};
+        updates['/partyPeoples/' + mappedPartyPeoplesKey] = null;
+        updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = '';
+
+        // <==== | Update All Data In Single Shot | ====>
+        update(ref(db), updates).then(x => {
+            resetVillagePeopleMapping(selectedIndex, '')
+            toggleProgressIndicator(selectedIndex, 'DELETE', false);
+        }).catch((error) => {
+            toggleProgressIndicator(selectedIndex, 'DELETE', false);
+        });
+    }
+
     // ---- End | Firebase Business Logic ---- //
 
     // ---- Start | Helper Functions ---- //
@@ -162,10 +178,10 @@ function UploadVillageInformation(props) {
                     if (!isValidData) {
                         setErrorMessage(selectedIndex, message);
                         toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
-                        return;
+                    } else {
+                        setErrorMessage(selectedIndex, '');
+                        uploadData(csvRows, villageKey, villGroupKey, selectedIndex);
                     }
-
-                    uploadData(csvRows, villageKey, villGroupKey, selectedIndex);
                 });
         };
 
@@ -261,7 +277,7 @@ function UploadVillageInformation(props) {
                                                     color='error'
                                                     type="button"
                                                     variant="contained"
-                                                    onClick={null}
+                                                    onClick={() => handleDeleteVillageMembers(villageData, index)}
                                                 >
                                                     <Delete />
                                                 </IconButton>
