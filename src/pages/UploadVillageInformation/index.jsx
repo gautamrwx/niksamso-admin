@@ -1,6 +1,6 @@
-import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, Input, LinearProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Delete, Upload } from '@mui/icons-material';
+import { Close, Delete, Search, Upload } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
@@ -12,16 +12,20 @@ function UploadVillageInformation(props) {
 
     const [selectedDDUser, setSelectedDDUser] = useState(null);
     const [villageList, setVillageList] = useState([]);
+    const [filteredVillageList, setFilteredVillageList] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(false);
+    const [searchBarInputText, setSearchBarInputText] = useState('');
 
-    useEffect(() => {
-        setIsDataLoading(true);
+    const assignFilteredVillageListData = (searchQuery = null) => {
+        const tempVillList = [];
 
-        // Convert JsonList Into Array
-        const arrVillList = [];
+        const arrFilteredVillages = searchQuery || searchQuery === ''
+            ? villageList.filter(x => x.villageName.toLowerCase().includes(searchQuery.toLowerCase()))
+            : villageList
 
-        villages.forEach(({ villageKey, mappedPartyPeoplesKey, villGroupKey, villageName }) => {
-            arrVillList.push({
+        // Assign data in proper structure
+        arrFilteredVillages.forEach(({ villageKey, mappedPartyPeoplesKey, villGroupKey, villageName }) => {
+            tempVillList.push({
                 villageKey,
                 villGroupKey,
                 villageName,
@@ -34,12 +38,56 @@ function UploadVillageInformation(props) {
             });
         });
 
-        setVillageList(arrVillList);
+        // Short By Name
+        tempVillList.sort((a, b) => {
+            return (function (a, b) {
+                a = a.toLowerCase();
+                b = b.toLowerCase();
+                return (a < b) ? -1 : (a > b) ? 1 : 0;
+            })(a.villageName, b.villageName);
+        });
+
+        setFilteredVillageList(tempVillList);
+    }
+
+    useEffect(() => {
+        setSearchBarInputText('');
+        assignFilteredVillageListData();
+        // eslint-disable-next-line
+    }, [villageList])
+
+    useEffect(() => {
+        setIsDataLoading(true);
+
+        setVillageList(
+            selectedDDUser
+                ? villages.filter(x => x.villGroupKey === selectedDDUser.mappedVillGroupKey)
+                : villages
+        );
+
         setIsDataLoading(false);
-    }, [selectedDDUser]);
+    }, [selectedDDUser, villages]);
+
+
+    //  -- [start] Search Operation Handling --
+    const handleSearchBarInputChange = (event) => {
+        const inputSearchText = event.target.value;
+        setSearchBarInputText(inputSearchText);
+
+        // Apply Search in Filtered Data
+        assignFilteredVillageListData(inputSearchText);
+    }
+
+    const clearSearchInput = () => {
+        setSearchBarInputText('');
+
+        // Reset Listed VillageData
+        assignFilteredVillageListData();
+    }
+    //  -- [End] Search Operation Handling --
 
     const toggleProgressIndicator = (index, progressType, condition) => {
-        setVillageList((prevArray) => {
+        setFilteredVillageList((prevArray) => {
             switch (progressType) {
                 case 'UPLOAD':
                     prevArray[index].progressStatus.uploadInProgress = condition;
@@ -55,14 +103,14 @@ function UploadVillageInformation(props) {
     }
 
     const resetVillagePeopleMapping = (index, condition) => {
-        setVillageList((prevArray) => {
+        setFilteredVillageList((prevArray) => {
             prevArray[index].mappedPartyPeoplesKey = condition;
             return [...prevArray];
         });
     }
 
     const setErrorMessage = (index, errorMessage = null) => {
-        setVillageList((prevArray) => {
+        setFilteredVillageList((prevArray) => {
             prevArray[index].errorMessage = errorMessage;
             return [...prevArray];
         });
@@ -101,7 +149,6 @@ function UploadVillageInformation(props) {
             toggleProgressIndicator(selectedIndex, 'DELETE', false);
         });
     }
-
     // ---- End | Firebase Business Logic ---- //
 
     // ---- Start | Helper Functions ---- //
@@ -221,8 +268,32 @@ function UploadVillageInformation(props) {
                 </Box>
             }
 
+            <Box
+                display="flex"
+                justifyContent="flex-end"
+                alignItems="flex-end"
+            >
+                <Input
+                    sx={{ mr: 10, mb: 1, "&.Mui-focused .MuiIconButton-root": { color: 'primary.main' } }}
+                    placeholder='Search'
+                    value={searchBarInputText}
+                    onChange={handleSearchBarInputChange}
+                    endAdornment={
+                        <>
+                            <IconButton
+                                sx={{ visibility: searchBarInputText.length > 0 ? "visible" : "hidden" }}
+                                onClick={clearSearchInput}
+                            >
+                                <Close />
+                            </IconButton>
+                            <Search />
+                        </>
+                    }
+                />
+            </Box>
+
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
-                {Array.from(villageList).map((villageData, index) => (
+                {Array.from(filteredVillageList).map((villageData, index) => (
                     <Grid item xs={1} sm={1} md={1} lg={1} key={index}>
                         <Card sx={{ minHeight: 120 }}>
                             <CardContent >
@@ -257,6 +328,7 @@ function UploadVillageInformation(props) {
                                                     <input
                                                         onChange={(event) => handleVillageMembersCSVUpload(event, villageData, index)}
                                                         type="file"
+                                                        accept=".csv"
                                                         hidden
                                                     />
                                                 </Button>
