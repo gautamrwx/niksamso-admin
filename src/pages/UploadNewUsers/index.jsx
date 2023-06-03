@@ -8,6 +8,7 @@ import { db, secondaryAuth } from '../../misc/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import styled from '@emotion/styled';
 import { child, push, ref, update } from 'firebase/database';
+import inchargeCsvUplDemo from '../../images/inchargeCsvUplDemo.jpg'
 
 // check duplicate emails and villages
 const findDuplicateArrElement = arry => {
@@ -25,6 +26,7 @@ function UploadNewUsers(props) {
 
     const [alertMessage, SetAlertMessage] = useState([]);
     const [isVisibleUploadModal, SetIsVisibleUploadModal] = useState(false);
+    const [isVisibleHelpModal, SetIsVisibleHelpModal] = useState(false);
     const [preparedUploadData, setPreparedUploadData] = useState([]);
 
     const validateInputCSV = (inputCSVLines) => {
@@ -234,7 +236,7 @@ function UploadNewUsers(props) {
                     sx={{
                         borderBottom: '0.2rem solid #1976d2',
                         mt: 10,
-                        mb:2,
+                        mb: 2,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -263,6 +265,7 @@ function UploadNewUsers(props) {
                             sx={{
                                 ml: 2
                             }}
+                            onClick={() => SetIsVisibleHelpModal(true)}
                         >
                             <Typography>File Format</Typography>
                             <QuestionMark />
@@ -335,7 +338,58 @@ function UploadNewUsers(props) {
                             </Box>
                         </Box>
                     </Modal>
-                    
+
+                    <Modal open={isVisibleHelpModal} onClose={null}>
+                        <Box
+                            sx={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                width: { xs: '95%', sm: '60%' },
+                                transform: 'translate(-50%, -50%)',
+                                bgcolor: 'background.paper',
+                            }}
+                        >
+                            <Paper style={{ maxHeight: 400, overflow: 'auto', boxShadow: 'none' }}>
+
+                                <Typography sx={{
+                                    fontWeight: 'bold',
+                                    margin: '11px 22px',
+                                    fontSize:20
+                                }} >
+                                    demo-file.csv
+                                </Typography>
+                                <Typography sx={{
+                                    fontWeight: 'bold',
+                                    margin: '11px 22px',
+                                    fontSize:14,
+                                    color:'red'
+                                }} >
+                                    * Upload file in .CSV format only
+                                </Typography>
+
+                                <Box
+
+                                    component="img"
+                                    src={inchargeCsvUplDemo}
+                                />
+
+                            </Paper>
+
+                            <Box paddingY={1} paddingX={0.5} display='flex'>
+                                <Button
+                                    onClick={() => SetIsVisibleHelpModal(false)}
+                                    color='error'
+                                    fullWidth
+                                    type="submit"
+                                    variant="outlined"
+                                >
+                                    Close
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Modal>
+
                     {
                         alertMessage.map(msg =>
                             <Alert severity={msg.type}>{msg.messageText}</Alert>
