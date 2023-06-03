@@ -1,6 +1,6 @@
-import { Alert, Box, Button, CircularProgress, Modal, Paper, Tooltip, Typography, tooltipClasses } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Container, Modal, Paper, Tooltip, Typography, tooltipClasses } from '@mui/material';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
-import { CheckCircleOutline, ErrorOutline, HourglassBottomRounded, Upload } from '@mui/icons-material';
+import { CheckCircleOutline, ErrorOutline, HourglassBottomRounded, Upload, QuestionMark } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useState } from 'react';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
@@ -130,8 +130,6 @@ function UploadNewUsers(props) {
             try {
                 const newRegisteredUser = await createUserWithEmailAndPassword(secondaryAuth, newUserData.email, '123456');
 
-
-
                 /**
                  * -----------------------------
                  * - SAVE DATA OF CURRENT USER -
@@ -171,8 +169,6 @@ function UploadNewUsers(props) {
                 }).catch((error) => {
                     alert("User Created Without Database | Contact Admin To register Again");
                 });
-
-
             } catch (event) {
                 // +Status+
                 setPreparedUploadData(prevArray => {
@@ -233,30 +229,49 @@ function UploadNewUsers(props) {
         <>
             <CustomAppBar props={props} />
 
-            <Box
-                display="grid"
-                justifyContent="center"
-                alignItems="center"
-                minWidth="100%"
-                minHeight="60vh"
-            >
+            <Container component="main" maxWidth="sm">
+                <Box
+                    sx={{
+                        borderBottom: '0.2rem solid #1976d2',
+                        mt: 10,
+                        mb:2,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        p: 3
+                    }}
+                >
+                    <Box>
+                        <Button
+                            variant="outlined"
+                            component="label"
+                        >
+                            <Typography>Upload CSV</Typography>
+                            <Upload />
+                            <input
+                                onClick={(e) => { e.target.value = '' }}
+                                onChange={handleNewUsersCSVUpload}
+                                type="file"
+                                accept=".csv"
+                                hidden
+                            />
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            component="label"
+                            sx={{
+                                ml: 2
+                            }}
+                        >
+                            <Typography>File Format</Typography>
+                            <QuestionMark />
+                        </Button>
+                    </Box>
+                </Box>
+
+
                 <Box>
-
-
-                    <Button
-                        variant="outlined"
-                        component="label"
-                    >
-                        <Typography display={{ xs: 'none', sm: 'block' }}>Upload</Typography> <Upload />
-                        <input
-                            onClick={(e) => { e.target.value = '' }}
-                            onChange={handleNewUsersCSVUpload}
-                            type="file"
-                            accept=".csv"
-                            hidden
-                        />
-                    </Button>
-
                     <Modal open={isVisibleUploadModal} onClose={null}>
                         <Box
                             sx={{
@@ -318,18 +333,16 @@ function UploadNewUsers(props) {
                                     Submit
                                 </Button>
                             </Box>
-
                         </Box>
                     </Modal>
-
+                    
                     {
                         alertMessage.map(msg =>
                             <Alert severity={msg.type}>{msg.messageText}</Alert>
                         )
                     }
-
                 </Box>
-            </Box>
+            </Container>
         </>
     );
 }
