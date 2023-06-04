@@ -173,9 +173,9 @@ function SignIn() {
           open={isSnackbarOpen}
           onClose={() => setIsSnackbarOpen(false)}
         >
-        <Alert severity="error">{alertMessage}</Alert>
-      </Snackbar>
-    </Box>
+          <Alert severity="error">{alertMessage}</Alert>
+        </Snackbar>
+      </Box>
     </Container >
   );
 }
