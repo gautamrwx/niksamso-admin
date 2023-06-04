@@ -187,7 +187,7 @@ function UploadVillageInformation(props) {
         partyMembersJsonArr.forEach(x => {
             arrPartyMem.push({
                 post: x[1],
-                name: x[2],
+                fullName: x[2],
                 age: x[3],
                 mobileNumber: [x[4], x[5], x[6], x[7], x[8]],
                 youthGeneral: x[9]
@@ -196,7 +196,7 @@ function UploadVillageInformation(props) {
 
         generalMembersJsonArr.forEach(x => {
             arrGenMem.push({
-                name: x[2],
+                fullName: x[2],
                 age: x[3],
                 mobileNumber: [x[4], x[5], x[6], x[7], x[8]],
                 youthGeneral: x[9]
