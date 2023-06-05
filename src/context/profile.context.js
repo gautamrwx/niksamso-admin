@@ -20,6 +20,8 @@ export const ProfileProvider = ({ children }) => {
                     if (user) {
                         const userProfileData = {
                             fullName: user.fullName,
+                            profilePicFull: user.profilePicFull,
+                            profilePicThumbnail: user.profilePicThumbnail,
                             uid: authObj.uid,
                             email: authObj.email,
                         }

@@ -5,10 +5,10 @@ import PasswordChange from './PasswordChange';
 import { ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
+import ProfilePicViewDrawer from "../../components/ProfilePicViewDrawer";
 
 function MyAccount(props) {
     const { profile, setProfile } = useProfile();
-
     const [isEditMode, setIsEditMode] = useState(false);
     const [myProfileInfo, setMyProfileInfo] = useState(profile);
     const [isProfileUpdateProgress, setIsProfileUpdateProgress] = useState(false);
@@ -59,6 +59,47 @@ function MyAccount(props) {
         });
     }
 
+    //=== [Start] Profile Pic Drawer === 
+    const [isProfilePicDrawerOpen, setIsProfilePicDrawerOpen] = useState(false);
+    const [profilePicDrawerData, setProfilePicDrawerData] = useState({});
+    const [imageUploadLocation, setImageUploadLocation] = useState(null);
+
+    const handleAvatarClickEvent = (selectedProfileData) => {
+        setIsProfilePicDrawerOpen(true);
+        setImageUploadLocation(`ProfilePictures/admins/${profile.uid}`);
+        setProfilePicDrawerData(selectedProfileData);
+    }
+
+    const handleProfilePicDrawerClose = () => {
+        setIsProfilePicDrawerOpen(false);
+        setImageUploadLocation(null);
+        setProfilePicDrawerData({});
+    }
+
+    const handleUploaedImageUrl = ({ profilePicFull, profilePicThumbnail }) => {
+        // Update Image Backend Database
+        const updates = {}
+
+        // 1. Assign User Profile Information
+        updates['/admins/' + profile.uid + '/profilePicFull'] = profilePicFull
+        updates['/admins/' + profile.uid + '/profilePicThumbnail'] = profilePicThumbnail
+
+        // <==== | Update All Data In Single Shot | ====>
+        update(ref(db), updates).then(x => {
+            //onsuccess
+        }).catch((error) => {
+            alert("Failed To Update");
+        });
+
+        //== Update Image in Local Database
+        setProfile(prev => ({
+            ...prev,
+            profilePicThumbnail: profilePicThumbnail,
+            profilePicFull: profilePicFull
+        }));
+    }
+    //=== [End] Profile Pic Drawer === 
+
     return (
         <>
             <CustomAppBar props={props} />
@@ -72,9 +113,10 @@ function MyAccount(props) {
                 }}
             >
                 <Avatar
+                    onClick={() => { handleAvatarClickEvent(profile) }}
                     sx={{ height: '6rem', width: '6rem' }}
                     alt={String(profile.fullName).toUpperCase()}
-                    src={profile.profilePic ? profile.profilePic : 'null'}
+                    src={profile.profilePicThumbnail ? profile.profilePicThumbnail : 'null'}
                 />
             </Box>
 
@@ -176,6 +218,15 @@ function MyAccount(props) {
             >
                 <Alert severity={alertMessage.msgType}>{alertMessage.msgContent}</Alert>
             </Snackbar>
+
+            <ProfilePicViewDrawer
+                anchor='bottom'
+                isProfilePicDrawerOpen={isProfilePicDrawerOpen}
+                handleProfilePicDrawerClose={handleProfilePicDrawerClose}
+                profilePicDrawerData={profilePicDrawerData}
+                imageUploadLocation={imageUploadLocation}
+                handleUploaedImageUrl={handleUploaedImageUrl}
+            />
         </>
     );
 }
