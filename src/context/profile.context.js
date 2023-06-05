@@ -13,16 +13,13 @@ export const ProfileProvider = ({ children }) => {
         const authUnsub = auth.onAuthStateChanged(authObj => {
             if (authObj) {
 
-                let userProfileData;
-
                 // Fetch Name And Profile Pic From DataBase
                 get(child(ref(db), "admins/" + authObj.uid)).then((snapshot) => {
                     const user = snapshot.val();
 
                     if (user) {
-                        userProfileData = {
+                        const userProfileData = {
                             fullName: user.fullName,
-                            profilePic: user.profilePic,
                             uid: authObj.uid,
                             email: authObj.email,
                         }
@@ -31,17 +28,12 @@ export const ProfileProvider = ({ children }) => {
                         setisLoading(false);
                     }
                     else {
+                        alert('Admin Not Exists In Database');
                         throw Object.assign(new Error('Undef'), { code: 0 });
                     }
                 }).catch((e) => {
-                    userProfileData = {
-                        fullName: "Unknown",
-                        profilePic: "",
-                        uid: authObj.uid,
-                        email: authObj.email,
-                    }
-
-                    setProfile(userProfileData);
+                    logoff();
+                    setProfile(null);
                     setisLoading(false);
                 });
             } else {
