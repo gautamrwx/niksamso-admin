@@ -6,11 +6,13 @@ import Typography from '@mui/material/Typography';
 import userLogo from '../../../images/userLogo.png';
 import cover from '../../../images/cover.jpg';
 
-
 function PartyMemberProfileCard({
     memberProfileData,
-    openContactDrawer
+    openContactDrawer,
+    handleAvatarClickEvent,
+    index
 }) {
+
     return (
         <Card sx={{ minHeight: 120 }}>
             <Box sx={{
@@ -27,10 +29,15 @@ function PartyMemberProfileCard({
                 alignItems="center"
                 mt={-6}
             >
+
                 <Avatar
+                    onClick={() => { handleAvatarClickEvent(memberProfileData, index) }}
                     sx={{ bgcolor: 'white', width: 80, height: 80, m: 'auto' }}
-                    alt='U'
-                    src={userLogo}
+                    src={
+                        memberProfileData.profilePicThumbnail && memberProfileData.profilePicThumbnail !== ''
+                            ? memberProfileData.profilePicThumbnail
+                            : userLogo
+                    }
                 />
 
                 <Box display="grid" alignItems="center">

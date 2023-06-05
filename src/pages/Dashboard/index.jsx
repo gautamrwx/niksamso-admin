@@ -84,7 +84,7 @@ function Dashboard(props) {
             const partyPeoples = snapshot.val();
 
             if (partyPeoples) {
-                setPartyPeoples(partyPeoples);
+                setPartyPeoples({ partyPeopleKey, ...partyPeoples });
             } else {
                 setPartyPeoples(null);
             }
@@ -110,8 +110,11 @@ function Dashboard(props) {
             <TabPanel value={selectedTabBarIndex} index={0}>
                 {(partyPeoples && partyPeoples.partyMembers.length > 0)
                     ? <PartyMembersView
+                        partyPeopleKey={partyPeoples.partyPeopleKey}
                         members={partyPeoples.partyMembers}
-                        openContactDrawer={openContactDrawer} />
+                        openContactDrawer={openContactDrawer}
+                        setPartyPeoples={setPartyPeoples}
+                    />
                     : <BlankTextProcessingDisplay
                         isVillageSelected={isVillageSelected}
                         isLoadingPartyPeoples={isLoadingPartyPeoples}
@@ -121,8 +124,10 @@ function Dashboard(props) {
 
             <TabPanel value={selectedTabBarIndex} index={1}>
                 {(partyPeoples && partyPeoples.generalMembers.length > 0)
-                    ? <GeneralMembersView members={partyPeoples.generalMembers}
-                        openContactDrawer={openContactDrawer} />
+                    ? <GeneralMembersView
+                        members={partyPeoples.generalMembers}
+                        openContactDrawer={openContactDrawer}
+                    />
                     : <BlankTextProcessingDisplay
                         isVillageSelected={isVillageSelected}
                         isLoadingPartyPeoples={isLoadingPartyPeoples}
