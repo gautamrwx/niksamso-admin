@@ -175,14 +175,14 @@ function UploadNewUsers(props) {
                         prevArray[i].toolTipMessge = '';
                         return [...prevArray];
                     });
-                    (i === dataSize-1) && setBtnClosePopupDisabled(false);
+                    (i === dataSize - 1) && setBtnClosePopupDisabled(false);
                 }).catch((error) => {
                     setPreparedUploadData(prevArray => {
                         prevArray[i].progressStatus = 'ERROR';
                         prevArray[i].toolTipMessge = 'User Created But Failed To Update Database';
                         return [...prevArray];
                     });
-                    (i === dataSize-1) && setBtnClosePopupDisabled(false);
+                    (i === dataSize - 1) && setBtnClosePopupDisabled(false);
                 });
             } catch (event) {
                 // +Status+
@@ -191,7 +191,7 @@ function UploadNewUsers(props) {
                     prevArray[i].toolTipMessge = event.code;
                     return [...prevArray];
                 });
-                (i === dataSize-1) && setBtnClosePopupDisabled(false);
+                (i === dataSize - 1) && setBtnClosePopupDisabled(false);
             }
         }
     }
@@ -245,7 +245,7 @@ function UploadNewUsers(props) {
         <>
             <CustomAppBar props={props} />
 
-            <Container component="main" maxWidth="sm">
+            <Container component="main" maxWidth="xs" sx={{ px: 0 }}>
                 <Box
                     sx={{
                         borderBottom: '0.2rem solid #1976d2',
@@ -254,7 +254,7 @@ function UploadNewUsers(props) {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        p: 3
+                        py: 2
                     }}
                 >
                     <Box>
@@ -281,7 +281,7 @@ function UploadNewUsers(props) {
                             }}
                             onClick={() => SetIsVisibleHelpModal(true)}
                         >
-                            <Typography>File Format</Typography>
+                            <Typography display={{ xs: 'none', sm: 'block' }}>File Format</Typography>
                             <QuestionMark />
                         </Button>
                     </Box>

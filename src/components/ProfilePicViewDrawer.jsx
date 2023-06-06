@@ -95,15 +95,57 @@ export default function ProfilePicViewDrawer({
         }
     }
 
-    const handleCameraButtonPress = () => {
-        // TODO
+    const getCameraImage = () => {
+        return new Promise((resolve, _) => {
+            window.navigator.camera.getPicture(onSuccess, onFail, {
+                quality: 100,
+                sourceType: window.Camera.PictureSourceType.CAMERA,
+                encodingType: window.Camera.EncodingType.JPG,
+                cameraDirection: window.Camera.Direction.BACK,
+                correctOrientation: true,
+                targetHeight: 500,
+                targetWidth: 500,
+                destinationType: window.Camera.DestinationType.DATA_URL
+            });
+
+            function onSuccess(capturedBase64Image) {
+                resolve({
+                    successful: true,
+                    capturedBase64Image,
+                    message: null
+                });
+            }
+
+            function onFail(message) {
+                resolve({
+                    successful: false,
+                    capturedBase64Image: null,
+                    message
+                });
+            }
+        })
+
+    }
+
+    const handleCameraButtonPress = async () => {
+        if (!window.navigator.camera) return;
+
+        const { successful, capturedBase64Image, message } = await getCameraImage();
+
+        if (successful) {
+            const image = new Image();
+            image.onload = () => { performProfilePicUpload(image) }
+            image.src = "data:image/jpeg;base64," + capturedBase64Image;
+        } else {
+            alert(message);
+        }
     }
 
     return (
         <Drawer
             anchor={anchor}
             open={isProfilePicDrawerOpen}
-            onClose={handleProfilePicDrawerClose}
+            onClose={null}
         >
             <Container maxWidth="xs">
                 <Box
