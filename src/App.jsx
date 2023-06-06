@@ -2,8 +2,9 @@ import { Routes, Route } from 'react-router-dom';
 import SignIn from './pages/SignIn'
 import Dashboard from './pages/Dashboard';
 import MyAccount from './pages/MyAccount';
-import UploadVillageInformation from './pages/UploadVillageInformation';
-import UploadNewUsers from './pages/UploadNewUsers';
+import ManageVillageMembers from './pages/ManageVillageMembers';
+import ManageIncharges from './pages/ManageIncharges';
+import CreateIncharges from './pages/CreateIncharges';
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
 import { ProfileProvider } from './context/profile.context';
@@ -52,9 +53,10 @@ function App() {
           {/* Secure Private Routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/UploadNewUsers" element={<UploadNewUsers />} />
+            <Route path="/CreateIncharges" element={<CreateIncharges />} />
             <Route path="/MyAccount" element={<MyAccount />} />
-            <Route path="/UploadVillageInformation" element={<UploadVillageInformation />} />
+            <Route path="/ManageVillageMembers" element={<ManageVillageMembers />} />
+            <Route path="/ManageIncharges" element={<ManageIncharges />} />
           </Route>
         </Routes >
       </UsersAndVillagesProvider>

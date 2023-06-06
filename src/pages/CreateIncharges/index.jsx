@@ -21,7 +21,7 @@ const findDuplicateArrElement = arry => {
     return minifiedDuplicates;
 }
 
-function UploadNewUsers(props) {
+function CreateIncharges(props) {
     const { users, villages } = useUsersAndVillages();
 
     const [alertMessage, SetAlertMessage] = useState([]);
@@ -416,4 +416,4 @@ function UploadNewUsers(props) {
     );
 }
 
-export default UploadNewUsers;
+export default CreateIncharges;

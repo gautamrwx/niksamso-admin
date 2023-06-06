@@ -7,7 +7,7 @@ import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import { child, push, ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
 
-function UploadVillageInformation(props) {
+function ManageVillageMembers(props) {
     const { villages } = useUsersAndVillages();
 
     const [selectedDDUser, setSelectedDDUser] = useState(null);
@@ -366,4 +366,4 @@ function UploadVillageInformation(props) {
     );
 }
 
-export default UploadVillageInformation;
+export default ManageVillageMembers;

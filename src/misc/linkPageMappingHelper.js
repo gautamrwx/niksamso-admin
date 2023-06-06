@@ -1,28 +1,41 @@
+import { GroupAdd, Home, People, PersonSearch } from "@mui/icons-material";
+
 const linkPageMappingHelper = (currentPagePath) => {
     const linkPageMapiings = [
         {
             linkPath: "/",
             linkPageName: "Dashboard",
             isLinkActive: false,
-            visibleInNavBar: true
+            visibleInNavBar: true,
+            drawerIcon:Home
         },
         {
-            linkPath: "/UploadNewUsers",
-            linkPageName: "Upload New Users",
+            linkPath: "/CreateIncharges",
+            linkPageName: "Create Incharges",
             isLinkActive: false,
-            visibleInNavBar: true
+            visibleInNavBar: true,
+            drawerIcon:GroupAdd
         },
         {
-            linkPath: "/UploadVillageInformation",
-            linkPageName: "Upload Village Info",
+            linkPath: "/ManageVillageMembers",
+            linkPageName: "Manage Village Members",
             isLinkActive: false,
-            visibleInNavBar: true
+            visibleInNavBar: true,
+            drawerIcon:People
+        },
+        {
+            linkPath: "/ManageIncharges",
+            linkPageName: "Manage Incharges",
+            isLinkActive: false,
+            visibleInNavBar: true,
+            drawerIcon:PersonSearch
         },
         {
             linkPath: "/MyAccount",
             linkPageName: "My Account",
             isLinkActive: false,
-            visibleInNavBar: false
+            visibleInNavBar: false,
+            drawerIcon:Home
         }
     ];
 
