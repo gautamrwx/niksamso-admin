@@ -6,7 +6,8 @@ import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import NewEmailInput from './NewEmailInput';
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { secondaryAuth } from '../../misc/firebase';
+import { db, secondaryAuth } from '../../misc/firebase';
+import { ref, update } from 'firebase/database';
 
 function ManageIncharges(props) {
     const { users } = useUsersAndVillages();
@@ -62,6 +63,18 @@ function ManageIncharges(props) {
 
 
     // ===============
+    const toggleProgressIndicator = (index, progressType, condition) => {
+        setFilteredInchargeList((prevArray) => {
+            switch (progressType) {
+                case 'EMAIL_CHANGE':
+                    prevArray[index].progressStatus.emailChangeInProgress = condition;
+                    break;
+                default:
+                    break;
+            }
+            return [...prevArray]
+        });
+    }
 
     const setErrorMessage = (index, errorMessage = null) => {
         setFilteredInchargeList((prevArray) => {
@@ -79,18 +92,72 @@ function ManageIncharges(props) {
         setIsSnackbarOpen(false);
     }
 
-    const createAndAssignNewEmail = async (selectedInchargeindex, newEmail, password) => {
-        //const newRegisteredUser = await createUserWithEmailAndPassword(secondaryAuth, newEmail, password);
-        const { uid, email } = { uid: 'qqq', email: 'www@ww.ww' } //newRegisteredUser.user;
+    const handleDeleteProfilePic = async (filePath) => {
+        const storage = getStorage();
+        const userProfileRef = storageRef(storage, filePath);
+
+        const jsonResponseStructure = (isSuccessful, errorMessage) => ({ isSuccessful, errorCode: errorMessage })
+
+        return new Promise((resolve, _) => {
+            deleteObject(userProfileRef).then(() => {
+                resolve(jsonResponseStructure(true, ''));
+            }).catch((err) => {
+                if (err.code === 'storage/object-not-found')
+                    resolve(jsonResponseStructure(true, ''));
+                else
+                    resolve(jsonResponseStructure(false, 'Problem Occoured While Deleting Profile Pic'));
+            });
+        })
+    }
+
+    const createAndAssignNewEmail = async (selectedIndex, newEmail, password) => {
+        // VALIDATION
+        if (filteredInchargeList.find(({ email }) => email === newEmail)) {
+            toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', false);
+            setErrorMessage(selectedIndex, `Email ( ${newEmail} ) Already Registered!`);
+            return;
+        }
 
         // Get Previous User Info
-        const previousUser = filteredInchargeList[selectedInchargeindex];
+        const previousUser = filteredInchargeList[selectedIndex];
+
+
+        // *** Start Execution *** //
+        toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', true);
+
+        /**
+         * --- Delete Profile Pic And ThumbNail Of Previous User
+         */
+        const imageName = ["_profilePicThumbnail.jpg", "_profilePicFull.jpg"];
+        let i = imageName.length;
+
+        while (i--) {
+            const { isSuccessful, errorMessage } = await handleDeleteProfilePic('/ProfilePictures/users/' + previousUser.key + imageName[i]);
+            if (!isSuccessful) {
+                toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', false);
+                setErrorMessage(selectedIndex, errorMessage);
+                return;
+            }
+        }
+
+        /**
+         * --- SignUp new User Account 
+         */
+        let newRegisteredUser;
+
+        try {
+            newRegisteredUser = await createUserWithEmailAndPassword(secondaryAuth, newEmail, password);
+        } catch (error) {
+            toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', false);
+            setErrorMessage(selectedIndex, `Email ( ${newEmail} ) ${error.code}`);
+            return;
+        }
+
+        const { uid, email } = newRegisteredUser.user;
 
         const updates = {};
         /**
-         * -----------------------------
-         * - SAVE DATA OF New USER -
-         * -----------------------------
+         * --- Save Data Of New User
          */
         const newUserProfileInfo = {
             email,
@@ -101,25 +168,9 @@ function ManageIncharges(props) {
         updates['/users/' + uid] = newUserProfileInfo;
 
         /**
-         * -----------------------------
-         * - Delete DATA OF Old USER -
-         * -----------------------------
+         * --- Delete Data Of Old User
          */
-
-        // Delete Profile Pic First
-        const storage = getStorage();
-
-        // Create a reference to the file to delete
-        const userProfileRef = storageRef(storage, '/ProfilePictures/users/' + previousUser.key);
-
         debugger;
-
-        try {
-            const x = await deleteObject(userProfileRef);
-            console.log(x);
-        } catch (error) {
-            console.log(error);
-        }
 
         const previousUserProfileInfo = {
             email: previousUser.email,
@@ -130,19 +181,12 @@ function ManageIncharges(props) {
         updates['/inactiveUsers/' + previousUser.key] = previousUserProfileInfo;
         updates['/users/' + previousUser.key] = null;
 
-    }
-
-    const handleCloseEmailInputPopup = (newEmail, password) => {
-        const selectedInchargeindex = currentSelectedInchage.index;
-
-        setCurrentSelectedInchage({
-            email: null,
-            index: null
+        // <==== | Update All Data In Single Shot | ====>
+        update(ref(db), updates).then(x => {
+            toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', false);
+        }).catch((error) => {
+            toggleProgressIndicator(selectedIndex, 'EMAIL_CHANGE', false);
         });
-
-        setIsEmailPopupOpen(false);
-
-        createAndAssignNewEmail(selectedInchargeindex, newEmail, password);
     }
 
     const showEmailInputPopup = (inchargeData, index) => {
@@ -152,6 +196,22 @@ function ManageIncharges(props) {
         });
 
         setIsEmailPopupOpen(true);
+    }
+
+    const hideEmailInputPopup = () => {
+        setCurrentSelectedInchage({
+            email: null,
+            index: null
+        });
+
+        setIsEmailPopupOpen(false);
+    }
+
+    const handleSubmitEmailPopup = (newEmail, password) => {
+        const selectedInchargeindex = currentSelectedInchage.index;
+
+        hideEmailInputPopup();
+        createAndAssignNewEmail(selectedInchargeindex, newEmail, password);
     }
 
     return (
@@ -206,7 +266,8 @@ function ManageIncharges(props) {
                                                     variant="outlined"
                                                     component="label"
                                                 >
-                                                    <Typography fontSize={12} >Assign New Email </Typography> <Sync />
+                                                    <Typography mr='1' fontSize={12} >Assign New User</Typography>
+                                                    <Sync />
                                                 </Button>
                                         }
                                     </Box>
@@ -230,7 +291,8 @@ function ManageIncharges(props) {
                     }}
                 >
                     <NewEmailInput
-                        handleCloseEmailInputPopup={handleCloseEmailInputPopup}
+                        hideEmailInputPopup={hideEmailInputPopup}
+                        handleCloseEmailInputPopup={handleSubmitEmailPopup}
                         currentSelectedInchage={currentSelectedInchage}
                         onShowSnackbarMessage={onShowSnackbarMessage}
                     />

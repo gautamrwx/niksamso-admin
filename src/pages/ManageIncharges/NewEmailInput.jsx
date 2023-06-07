@@ -2,12 +2,13 @@ import { Box, Button, FormControl, InputLabel, OutlinedInput, Typography } from 
 import { useState } from 'react';
 import { emailValidator } from '../../misc/emailPasswordValidator';
 
-const password = '123456';
+const newPassword = '123456';
 
 function NewEmailInput({
     onShowSnackbarMessage,
     currentSelectedInchage,
-    handleCloseEmailInputPopup
+    handleCloseEmailInputPopup,
+    hideEmailInputPopup
 }) {
     const [inputNewEmail, setInputNewEmail] = useState({
         newEmail: ''
@@ -32,7 +33,7 @@ function NewEmailInput({
             return;
         }
 
-        handleCloseEmailInputPopup(inputNewEmail.newEmail, password);
+        handleCloseEmailInputPopup(inputNewEmail.newEmail, newPassword);
     }
 
     return (
@@ -71,14 +72,13 @@ function NewEmailInput({
                 fullWidth
                 disabled
                 variant="outlined">
-                <InputLabel>Password</InputLabel>
+                <InputLabel>New Password</InputLabel>
                 <OutlinedInput
                     inputProps={{ maxLength: 12 }}
-                    value={password}
-                    label="Password"
+                    value={newPassword}
+                    label="New Password"
                 />
             </FormControl>
-
 
             <Button
                 type="submit"
@@ -90,10 +90,11 @@ function NewEmailInput({
                     }
                 }}
             >
-                Change Email
+                Create Account
             </Button>
 
             <Button
+                onClick={hideEmailInputPopup}
                 variant="outlined"
                 fullWidth
                 sx={{
