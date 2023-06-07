@@ -66,8 +66,8 @@ function MyAccount(props) {
 
     const handleAvatarClickEvent = (selectedProfileData) => {
         setIsProfilePicDrawerOpen(true);
-        setImageUploadLocation(`ProfilePictures/admins/${profile.uid}`);
         setProfilePicDrawerData(selectedProfileData);
+        setImageUploadLocation(`ProfilePictures/users/${profile.uid}`);
     }
 
     const handleProfilePicDrawerClose = () => {

@@ -62,7 +62,7 @@ export default function InchargeAndVillageSelector({
         switch (reason) {
             case 'selectOption':
                 setSelectedDDVillage(value);
-                handleVillageSelectionChange(value.mappedPartyPeoplesKey,value.villageName);
+                handleVillageSelectionChange(value);
                 setIsVillageSelected(true);
                 break;
             default:
