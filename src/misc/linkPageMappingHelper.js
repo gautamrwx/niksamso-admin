@@ -1,4 +1,4 @@
-import { GroupAdd, Home, People, PersonSearch } from "@mui/icons-material";
+import { GroupAdd, Home, NoAccounts, People, PersonSearch } from "@mui/icons-material";
 
 const linkPageMappingHelper = (currentPagePath) => {
     const linkPageMapiings = [
@@ -29,6 +29,13 @@ const linkPageMappingHelper = (currentPagePath) => {
             isLinkActive: false,
             visibleInNavBar: true,
             drawerIcon:PersonSearch
+        },
+        {
+            linkPath: "/InactiveIncharges",
+            linkPageName: "Inactive Incharges",
+            isLinkActive: false,
+            visibleInNavBar: true,
+            drawerIcon:NoAccounts
         },
         {
             linkPath: "/MyAccount",

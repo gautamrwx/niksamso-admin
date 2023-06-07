@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import MyAccount from './pages/MyAccount';
 import ManageVillageMembers from './pages/ManageVillageMembers';
 import ManageIncharges from './pages/ManageIncharges';
+import InactiveIncharges from './pages/InactiveIncharges';
 import CreateIncharges from './pages/CreateIncharges';
 import PrivateRoute from './components/PrivateRoute';
 import PublicRoute from './components/PublicRoute';
@@ -57,6 +58,7 @@ function App() {
             <Route path="/MyAccount" element={<MyAccount />} />
             <Route path="/ManageVillageMembers" element={<ManageVillageMembers />} />
             <Route path="/ManageIncharges" element={<ManageIncharges />} />
+            <Route path="/InactiveIncharges" element={<InactiveIncharges />} />
           </Route>
         </Routes >
       </UsersAndVillagesProvider>
