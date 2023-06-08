@@ -1,4 +1,4 @@
-import { Box, Container, Drawer, Grid, IconButton, Input, Typography } from '@mui/material';
+import { Box, Container, Drawer, Grid, IconButton, Input, Modal, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Close, Email, PermIdentity, Search } from '@mui/icons-material';
 import csv from 'csvtojson';
@@ -8,6 +8,8 @@ import { child, push, ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
 import FullScreenMessageText from '../../components/FullScreenMessageText';
 import VillageCard from './VillageCard';
+import AssignedInchargeDrawer from './AssignedInchargeDrawer';
+import EditVillageModal from './EditVillageModal';
 
 const getFormattedDrawerProperty = (isDrawerOpen, villageName, inchargeEmail, inchargeName) =>
     ({ isDrawerOpen, villageName, inchargeEmail, inchargeName });
@@ -21,7 +23,8 @@ function ManageVillageMembers(props) {
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [searchBarInputText, setSearchBarInputText] = useState('');
 
-    const [villageInchargeDrawer, setVillageInchargeDrawer] = useState({})
+    const [villageInchargeDrawer, setVillageInchargeDrawer] = useState({});
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     const assignFilteredVillageListData = (searchQuery = null) => {
         const tempVillList = [];
@@ -217,34 +220,41 @@ function ManageVillageMembers(props) {
     }
 
     const handleVillageMembersCSVUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex) => {
-        toggleProgressIndicator(selectedIndex, 'UPLOAD', true);
-
         const fr = new FileReader();
 
         fr.onload = function () {
-            csv({
-                noheader: true,
-                output: "csv",
-            })
+            csv({ noheader: true, output: "csv", })
                 .fromString(fr.result)
-                .then((csvRows) => {
-                    const { isValidData, message } = verifyData(csvRows, villageName);
+                .then((inputCSVLines) => {
+                    // 1. Check for validation 
+                    const { isValidData, message } = verifyData(inputCSVLines, villageName);
                     if (!isValidData) {
                         setErrorMessage(selectedIndex, message);
                         toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
-                    } else {
-                        setErrorMessage(selectedIndex, '');
-                        uploadData(csvRows, villageKey, villGroupKey, selectedIndex);
                     }
-                });
-        };
+                    // 1. Execute After Validation Successful  
+                    else {
+                        setErrorMessage(selectedIndex, '');
+                        uploadData(inputCSVLines, villageKey, villGroupKey, selectedIndex);
+                    }
+                })
+        }
 
-        fr.readAsText(target.files[0]);
+        if (target.files.length > 0)
+            fr.readAsText(target.files[0]);
     };
+
+    const handleVillageMembersCSVReUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex) => {
+        debugger
+    }
 
     const displayVillageIncharge = ({ villGroupKey, villageName }) => {
         const { fullName, email } = users.find(el => el.mappedVillGroupKey === villGroupKey);
         setVillageInchargeDrawer(getFormattedDrawerProperty(true, villageName, email, fullName));
+    }
+
+    const handleEditButtonPress = () => {
+        setIsEditModalOpen(true);
     }
     // ---- End | Helper Functions ---- //
 
@@ -297,43 +307,28 @@ function ManageVillageMembers(props) {
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredVillageList).map((villageData, index) => (
                     <VillageCard
+                        key={index}
                         villageData={villageData}
                         index={index}
                         handleVillageInchargeDisplay={() => { displayVillageIncharge(villageData) }}
-                        handleDeleteVillageMembers={() => { handleDeleteVillageMembers(villageData, index) }}
+                        handleEditButtonPress={() => { handleEditButtonPress() }}
                         handleVillageMembersCSVUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index) }}
+                        handleVillageMembersCSVReUpload={(event) => { handleVillageMembersCSVReUpload(event, villageData, index) }}
                     />
                 ))}
             </Grid >
 
+            {/* Edit Modal*/}
+            <EditVillageModal
+                isEditModalOpen={isEditModalOpen}
+                setIsEditModalOpen={setIsEditModalOpen}
+            />
+
             {/* Assigned Incharge Display Drawer  */}
-            <Drawer
-                anchor={'bottom'}
-                open={villageInchargeDrawer.isDrawerOpen}
-                onClose={() => { setVillageInchargeDrawer({}) }}
-            >
-                <Container maxWidth="xs">
-                    <Box>
-                        <Box display={'flex'} flexDirection={'column'} mb={10} mt={2}>
-                            <Typography color='#8896a4' fontWeight='bold' fontSize={24}>
-                                {villageInchargeDrawer.villageName}
-                            </Typography>
-                            <Box display={'flex'} flexDirection={'row'} mt={5}>
-                                <PermIdentity sx={{ color: '#133168' }} />
-                                <Typography color={'#133168'} ml={2}>
-                                    {villageInchargeDrawer.inchargeName}
-                                </Typography>
-                            </Box>
-                            <Box display={'flex'} flexDirection={'row'}>
-                                <Email sx={{ color: '#133168' }} />
-                                <Typography color={'#133168'} ml={2}>
-                                    {villageInchargeDrawer.inchargeEmail}
-                                </Typography>
-                            </Box>
-                        </Box>
-                    </Box>
-                </Container>
-            </Drawer>
+            <AssignedInchargeDrawer
+                villageInchargeDrawer={villageInchargeDrawer}
+                setVillageInchargeDrawer={setVillageInchargeDrawer}
+            />
         </>
     );
 }

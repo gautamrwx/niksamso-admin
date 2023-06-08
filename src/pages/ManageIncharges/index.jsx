@@ -247,6 +247,7 @@ function ManageIncharges(props) {
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredInchargeList).map((inchargeData, index) => (
                     <InchargeCardGrid
+                        key={index}
                         inchargeData={inchargeData}
                         index={index}
                         showEmailInputPopup={() => { showEmailInputPopup(inchargeData, index) }}
@@ -283,8 +284,8 @@ function ManageIncharges(props) {
                             </Typography>
 
                             <List>
-                                {villageListDrawer.assignedVillageList.map(({ villageName, key }) => (
-                                    <ListItem key={key} disablePadding>
+                                {villageListDrawer.assignedVillageList.map(({ villageName }, indx) => (
+                                    <ListItem key={indx} disablePadding>
                                         <ListItemButton>
                                             <ListItemText primary={villageName} />
                                         </ListItemButton>

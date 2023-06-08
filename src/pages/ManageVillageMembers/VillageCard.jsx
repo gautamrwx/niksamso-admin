@@ -1,12 +1,13 @@
 import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
-import { Delete, PermIdentity, Replay, Upload } from '@mui/icons-material';
+import { Delete, Edit, PermIdentity, Replay, Upload } from '@mui/icons-material';
 import UploadButton from './UploadButton';
 
 export default function VillageCard({
     villageData,
     index,
     handleVillageMembersCSVUpload,
-    handleDeleteVillageMembers,
+    handleVillageMembersCSVReUpload,
+    handleEditButtonPress,
     handleVillageInchargeDisplay
 }) {
     return (
@@ -45,7 +46,7 @@ export default function VillageCard({
                                 !villageData.progressStatus.uploadInProgress && villageData.mappedPartyPeoplesKey !== ''
                                     ? <UploadButton
                                         IconName={Replay}
-                                        onFileChange={null}
+                                        onFileChange={handleVillageMembersCSVReUpload}
                                     >
                                         Re Upload
                                     </UploadButton>
@@ -66,13 +67,12 @@ export default function VillageCard({
                                 villageData.progressStatus.deleteInProgress
                                     ? <CircularProgress color="error" />
                                     : <IconButton
-                                        disabled={villageData.mappedPartyPeoplesKey === ''}
-                                        color='error'
+                                        color='primary'
                                         type="button"
                                         variant="contained"
-                                        onClick={handleDeleteVillageMembers}
+                                        onClick={handleEditButtonPress}
                                     >
-                                        <Delete />
+                                        <Edit />
                                     </IconButton>
                             }
                         </Box>
