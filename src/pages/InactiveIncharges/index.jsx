@@ -2,17 +2,21 @@ import { Alert, Box, Button, Card, CardActions, CardContent, Grid, LinearProgres
 import { useEffect, useState } from 'react';
 import { DeleteForever } from '@mui/icons-material';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
-import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
+import FullScreenMessageText from '../../components/FullScreenMessageText';
 import { db } from '../../misc/firebase';
 import { child, get, ref } from 'firebase/database';
 import InactiveInchargeDeleteConfirmation from './InactiveInchargeDeleteConfirmation';
+import { secondaryAuth } from '../../misc/firebase';
+import { deleteUser, fetchSignInMethodsForEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 function ManageIncharges(props) {
 
     const [inActiveUsers, setInActiveUsers] = useState([]);
+    const [isDataLoading, setIsDataLoading] = useState(false);
 
     // Fetch users on useeffect
     useEffect(() => {
+        setIsDataLoading(true);
         get(child(ref(db), "inactiveUsers")).then((snapshot) => {
             const data = snapshot.val();
 
@@ -43,7 +47,10 @@ function ManageIncharges(props) {
 
                 setInActiveUsers(structuredInactiveUserList);
             }
-        }).catch((e) => { });
+            setIsDataLoading(false);
+        }).catch((e) => {
+            setIsDataLoading(false);
+        });
     }, []);
 
 
@@ -87,26 +94,37 @@ function ManageIncharges(props) {
         setIsSnackbarOpen(false);
     }
 
-    const handleDeleteProfilePic = async (filePath) => {
-        const storage = getStorage();
-        const userProfileRef = storageRef(storage, filePath);
-
-        const jsonResponseStructure = (isSuccessful, errorMessage) => ({ isSuccessful, errorCode: errorMessage })
-
-        return new Promise((resolve, _) => {
-            deleteObject(userProfileRef).then(() => {
-                resolve(jsonResponseStructure(true, ''));
-            }).catch((err) => {
-                if (err.code === 'storage/object-not-found')
-                    resolve(jsonResponseStructure(true, ''));
-                else
-                    resolve(jsonResponseStructure(false, 'Problem Occoured While Deleting Profile Pic'));
-            });
-        })
+    const deleteRecordFromDatabase = (key, index) => {
+        setInActiveUsers(prev => prev.filter((_, i) => i !== index));
+        console.log('Dele Ok , Del From FromDB');
     }
 
     const performDeleteUserAction = (selectedIndex, password) => {
+        const { email, key } = inActiveUsers[selectedIndex];
 
+        signInWithEmailAndPassword(secondaryAuth, email, password)
+            .then((user) => {
+                const userToDelete = secondaryAuth.currentUser;
+
+                deleteUser(userToDelete).then(() => {
+                    deleteRecordFromDatabase(key, selectedIndex);
+                    toggleProgressIndicator(selectedIndex, 'DELETE', false);
+                    signOut(secondaryAuth);
+                }).catch((error) => {
+                    setErrorMessage(selectedIndex, 'Failed To Delete, Do It Manually');
+                    toggleProgressIndicator(selectedIndex, 'DELETE', false);
+                });
+            }).catch((error) => {
+                if (error.code === 'auth/user-not-found') {
+                    deleteRecordFromDatabase(key, selectedIndex);
+                } else if (error.code === "auth/wrong-password") {
+                    setErrorMessage(selectedIndex, 'Invalid Password');
+                } else {
+                    setErrorMessage(selectedIndex, 'Unkown Error Occoured');
+                }
+
+                toggleProgressIndicator(selectedIndex, 'DELETE', false);
+            })
     }
 
     const showDeleteConfirmationPopup = (inactiveUser, index) => {
@@ -134,9 +152,44 @@ function ManageIncharges(props) {
         performDeleteUserAction(selectedIndex, password);
     }
 
+    const handleDeleteInactiveUser = async (inactiveUser, index) => {
+        // Reset Previous Message And Start Processing 
+        toggleProgressIndicator(index, 'DELETE', true);
+        setErrorMessage(index, '');
+
+        // if user not exist in auth , Delte that directly
+        try {
+            const methods = await fetchSignInMethodsForEmail(secondaryAuth, inactiveUser.email);
+            if (methods.length === 0) {
+                deleteRecordFromDatabase(inactiveUser.key, index);
+                return;
+            }
+        } catch (error) {
+            setErrorMessage(index, 'Failed To Delete, Do It Manually');
+            toggleProgressIndicator(index, 'DELETE', false);
+            return;
+        }
+
+        showDeleteConfirmationPopup(inactiveUser, index)
+    }
+
     return (
         <>
             <CustomAppBar props={props} />
+
+            {
+                isDataLoading &&
+                <FullScreenMessageText showLoader>
+                    Loading
+                </FullScreenMessageText>
+            }
+
+            {
+                !isDataLoading && Array.from(inActiveUsers).length <= 0 &&
+                <FullScreenMessageText >
+                    Empty
+                </FullScreenMessageText>
+            }
 
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(inActiveUsers).map((inactiveUser, index) => (
@@ -170,7 +223,7 @@ function ManageIncharges(props) {
                                                 ? <LinearProgress />
                                                 : <Button
                                                     color='error'
-                                                    onClick={() => { showDeleteConfirmationPopup(inactiveUser, index) }}
+                                                    onClick={() => { handleDeleteInactiveUser(inactiveUser, index) }}
                                                     variant="outlined"
                                                     component="label"
                                                 >
@@ -198,7 +251,7 @@ function ManageIncharges(props) {
                     }}
                 >
                     <InactiveInchargeDeleteConfirmation
-                    handlePasswordSubmit={handlePasswordSubmit}
+                        handlePasswordSubmit={handlePasswordSubmit}
                         currentSelectedData={currentSelectedData}
                         onShowSnackbarMessage={onShowSnackbarMessage}
                         hideDeleteConfirmationPopup={hideDeleteConfirmationPopup}
