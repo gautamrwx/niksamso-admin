@@ -1,6 +1,6 @@
-import { Alert, Avatar, Box, Button, Card, CardActions, CardContent, Grid, IconButton, LinearProgress, Modal, Snackbar, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Button, Card, CardActions, CardContent, Container, Drawer, Grid, IconButton, LinearProgress, List, ListItem, ListItemButton, ListItemText, Modal, Snackbar, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ListAlt, Sync } from '@mui/icons-material';
+import { Email, ListAlt, PermIdentity, Sync } from '@mui/icons-material';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import NewEmailInput from './NewEmailInput';
@@ -9,13 +9,18 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import FullScreenMessageText from '../../components/FullScreenMessageText';
 import { db, secondaryAuth } from '../../misc/firebase';
 import { ref, update } from 'firebase/database';
+import InchargeCardGrid from './InchargeCardGrid';
+
+const getFormattedDrawerProperty = (isDrawerOpen = false, inchargeEmail = null, inchargeName = null, assignedVillageList = []) =>
+    ({ isDrawerOpen, inchargeEmail, inchargeName, assignedVillageList });
 
 function ManageIncharges(props) {
-    const { users } = useUsersAndVillages();
+    const { users, villages } = useUsersAndVillages();
 
     const [filteredInchargeList, setFilteredInchargeList] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(false);
 
+    const [villageListDrawer, setVillageListDrawer] = useState(getFormattedDrawerProperty())
     const [isEmailPopupOpen, setIsEmailPopupOpen] = useState(false);
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState({
@@ -216,6 +221,11 @@ function ManageIncharges(props) {
         createAndAssignNewEmail(selectedInchargeindex, newEmail, password);
     }
 
+    const displayVillageListDrawer = ({ email, fullName, mappedVillGroupKey }) => {
+        const allVillages = villages.filter(el => el.villGroupKey === mappedVillGroupKey);
+        setVillageListDrawer(getFormattedDrawerProperty(true, email, fullName, allVillages));
+    }
+
     return (
         <>
             <CustomAppBar props={props} />
@@ -236,64 +246,57 @@ function ManageIncharges(props) {
 
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredInchargeList).map((inchargeData, index) => (
-                    <Grid item xs={1} sm={1} md={1} lg={1} key={index}>
-                        <Card sx={{ minHeight: 120 }}>
-                            <CardContent >
-                                <Box display="flex" flex='1'>
-                                    <Avatar
-                                        alt={String(inchargeData.fullName).toUpperCase()}
-                                        src={inchargeData.profilePicThumbnail ? inchargeData.profilePicThumbnail : 'null'}
-                                    />
-                                    <Box flex='1'></Box>
-
-                                    <IconButton>
-                                        <ListAlt color='info' />
-                                    </IconButton>
-
-                                </Box>
-
-                                <Box>
-                                    <Typography color={'#415468'} fontWeight='bold'>
-                                        {inchargeData.fullName}
-                                    </Typography>
-                                    <Typography color={'#415468'}>
-                                        {inchargeData.email}
-                                    </Typography>
-                                </Box>
-                                <Box height='2rem'>
-                                    <Typography sx={{ color: '#d81f10', fontSize: 13 }}>
-                                        {inchargeData.errorMessage}
-                                    </Typography>
-                                </Box>
-                            </CardContent>
-                            <CardActions>
-                                <Box display="flex" flex='1' >
-                                    <Box
-                                        display="flex"
-                                        flexDirection={'column'}
-                                        flex='1'
-                                        justifyContent={'center'}
-                                    >
-                                        {
-                                            inchargeData.progressStatus.emailChangeInProgress
-                                                ? <LinearProgress />
-                                                : <Button
-                                                    onClick={() => { showEmailInputPopup(inchargeData, index) }}
-                                                    variant="outlined"
-                                                    component="label"
-                                                >
-                                                    <Typography mr='1' fontSize={12} >Assign New User</Typography>
-                                                    <Sync />
-                                                </Button>
-                                        }
-                                    </Box>
-                                </Box>
-                            </CardActions>
-                        </Card >
-                    </Grid>
+                    <InchargeCardGrid
+                        inchargeData={inchargeData}
+                        index={index}
+                        showEmailInputPopup={() => { showEmailInputPopup(inchargeData, index) }}
+                        displayVillageListDrawer={() => { displayVillageListDrawer(inchargeData) }}
+                    />
                 ))
                 }
             </Grid >
+
+            {/* Assigned Incharge Display Drawer  */}
+            <Drawer
+                anchor={'bottom'}
+                open={villageListDrawer.isDrawerOpen}
+                onClose={() => setVillageListDrawer(getFormattedDrawerProperty())}
+            >
+                <Container maxWidth="xs">
+                    <Box height={window.innerHeight * 6 / 10}>
+                        <Box display={'flex'} flexDirection={'column'} mb={10} mt={2}>
+                            <Box display={'flex'} flexDirection={'row'} >
+                                <PermIdentity sx={{ color: '#133168' }} />
+                                <Typography color='#133168' ml={2}>
+                                    {villageListDrawer.inchargeName}
+                                </Typography>
+                            </Box>
+                            <Box display={'flex'} flexDirection={'row'}>
+                                <Email sx={{ color: '#133168' }} />
+                                <Typography color='#133168' ml={2}>
+                                    {villageListDrawer.inchargeEmail}
+                                </Typography>
+                            </Box>
+
+                            <Typography color='#8896a4' mt={3} fontSize={17} fontWeight='bold'>
+                                Assigned Villages
+                            </Typography>
+
+                            <List>
+                                {villageListDrawer.assignedVillageList.map(({ villageName, key }) => (
+                                    <ListItem key={key} disablePadding>
+                                        <ListItemButton>
+                                            <ListItemText primary={villageName} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+
+
+                        </Box>
+                    </Box>
+                </Container>
+            </Drawer>
 
             <Modal open={isEmailPopupOpen} onClose={null}>
                 <Box
