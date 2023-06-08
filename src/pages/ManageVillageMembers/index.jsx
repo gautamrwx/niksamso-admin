@@ -6,6 +6,7 @@ import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import { child, push, ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
+import FullScreenMessageText from '../../components/FullScreenMessageText';
 
 function ManageVillageMembers(props) {
     const { villages } = useUsersAndVillages();
@@ -245,36 +246,13 @@ function ManageVillageMembers(props) {
                 setSelectedDDUser={setSelectedDDUser}
             />
 
-            {
-                isDataLoading && <Box
-                    display="grid"
-                    justifyContent="center"
-                    alignItems="center"
-                    minWidth="100%"
-                    minHeight="60vh"
-                >
-                    <Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </Box>
-                        <Typography
-                            fontWeight='bold'
-                            fontFamily={"sans-serif"}
-                            color='#686868'
-                        >
-                            Loading
-                        </Typography>
-                    </Box>
-                </Box>
-            }
-
             <Box
                 display="flex"
                 justifyContent="flex-end"
                 alignItems="flex-end"
             >
                 <Input
-                    sx={{ mr: 10, mb: 1, "&.Mui-focused .MuiIconButton-root": { color: 'primary.main' } }}
+                    sx={{ mr: 5, mb: 1, "&.Mui-focused .MuiIconButton-root": { color: 'primary.main' } }}
                     placeholder='Search'
                     value={searchBarInputText}
                     onChange={handleSearchBarInputChange}
@@ -291,6 +269,19 @@ function ManageVillageMembers(props) {
                     }
                 />
             </Box>
+
+            {
+                isDataLoading &&
+                <FullScreenMessageText showLoader>
+                    Loading
+                </FullScreenMessageText>
+            }
+            {
+                !isDataLoading && Array.from(filteredVillageList).length <= 0 &&
+                <FullScreenMessageText >
+                    No Data
+                </FullScreenMessageText>
+            }
 
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredVillageList).map((villageData, index) => (

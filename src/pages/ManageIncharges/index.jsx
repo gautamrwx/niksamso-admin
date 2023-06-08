@@ -6,6 +6,7 @@ import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import NewEmailInput from './NewEmailInput';
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import FullScreenMessageText from '../../components/FullScreenMessageText';
 import { db, secondaryAuth } from '../../misc/firebase';
 import { ref, update } from 'firebase/database';
 
@@ -13,6 +14,7 @@ function ManageIncharges(props) {
     const { users } = useUsersAndVillages();
 
     const [filteredInchargeList, setFilteredInchargeList] = useState([]);
+    const [isDataLoading, setIsDataLoading] = useState(false);
 
     const [isEmailPopupOpen, setIsEmailPopupOpen] = useState(false);
     const [isSnackbarOpen, setIsSnackbarOpen] = useState(false);
@@ -54,6 +56,7 @@ function ManageIncharges(props) {
         });
 
         setFilteredInchargeList(tempInchargeList);
+        setIsDataLoading(false);
     }
 
     useEffect(() => {
@@ -216,6 +219,20 @@ function ManageIncharges(props) {
     return (
         <>
             <CustomAppBar props={props} />
+
+            {
+                isDataLoading &&
+                <FullScreenMessageText showLoader>
+                    Loading
+                </FullScreenMessageText>
+            }
+
+            {
+                !isDataLoading && Array.from(filteredInchargeList).length <= 0 &&
+                <FullScreenMessageText >
+                    No Data
+                </FullScreenMessageText>
+            }
 
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredInchargeList).map((inchargeData, index) => (
