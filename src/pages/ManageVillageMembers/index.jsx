@@ -11,8 +11,19 @@ import VillageCard from './VillageCard';
 import AssignedInchargeDrawer from './AssignedInchargeDrawer';
 import EditVillageModal from './EditVillageModal';
 
-const getFormattedDrawerProperty = (isDrawerOpen, villageName, inchargeEmail, inchargeName) =>
-    ({ isDrawerOpen, villageName, inchargeEmail, inchargeName });
+const getFormattedDrawerProperty = (
+    isDrawerOpen = false,
+    villageName = null,
+    inchargeEmail = null,
+    inchargeName = null
+) => ({ isDrawerOpen, villageName, inchargeEmail, inchargeName });
+
+const getFormattedEditModalProperty = (
+    isEditModalOpen = false,
+    villageKey = null,
+    villGroupKey = null,
+    villageName = null
+) => ({ isEditModalOpen, villageKey, villGroupKey, villageName });
 
 function ManageVillageMembers(props) {
     const { users, villages } = useUsersAndVillages();
@@ -23,8 +34,8 @@ function ManageVillageMembers(props) {
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [searchBarInputText, setSearchBarInputText] = useState('');
 
-    const [villageInchargeDrawer, setVillageInchargeDrawer] = useState({});
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [villageInchargeDrawer, setVillageInchargeDrawer] = useState(getFormattedDrawerProperty());
+    const [editVillageModal, setEditVillageModal] = useState(getFormattedEditModalProperty());
 
     const assignFilteredVillageListData = (searchQuery = null) => {
         const tempVillList = [];
@@ -144,21 +155,6 @@ function ManageVillageMembers(props) {
         });
     }
 
-    const handleDeleteVillageMembers = ({ villageKey, villGroupKey, mappedPartyPeoplesKey }, selectedIndex) => {
-        toggleProgressIndicator(selectedIndex, 'DELETE', true);
-
-        const updates = {};
-        updates['/partyPeoples/' + mappedPartyPeoplesKey] = null;
-        updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = '';
-
-        // <==== | Update All Data In Single Shot | ====>
-        update(ref(db), updates).then(x => {
-            resetVillagePeopleMapping(selectedIndex, '')
-            toggleProgressIndicator(selectedIndex, 'DELETE', false);
-        }).catch((error) => {
-            toggleProgressIndicator(selectedIndex, 'DELETE', false);
-        });
-    }
     // ---- End | Firebase Business Logic ---- //
 
     // ---- Start | Helper Functions ---- //
@@ -253,9 +249,12 @@ function ManageVillageMembers(props) {
         setVillageInchargeDrawer(getFormattedDrawerProperty(true, villageName, email, fullName));
     }
 
-    const handleEditButtonPress = () => {
-        setIsEditModalOpen(true);
+    const handleEditButtonPress = ({ villageKey, villGroupKey, villageName }) => {
+        setEditVillageModal(
+            getFormattedEditModalProperty(true, villageKey, villGroupKey, villageName)
+        );
     }
+
     // ---- End | Helper Functions ---- //
 
     return (
@@ -311,7 +310,7 @@ function ManageVillageMembers(props) {
                         villageData={villageData}
                         index={index}
                         handleVillageInchargeDisplay={() => { displayVillageIncharge(villageData) }}
-                        handleEditButtonPress={() => { handleEditButtonPress() }}
+                        handleEditButtonPress={() => { handleEditButtonPress(villageData) }}
                         handleVillageMembersCSVUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index) }}
                         handleVillageMembersCSVReUpload={(event) => { handleVillageMembersCSVReUpload(event, villageData, index) }}
                     />
@@ -320,8 +319,9 @@ function ManageVillageMembers(props) {
 
             {/* Edit Modal*/}
             <EditVillageModal
-                isEditModalOpen={isEditModalOpen}
-                setIsEditModalOpen={setIsEditModalOpen}
+                editVillageModal={editVillageModal}
+                setEditVillageModal={setEditVillageModal}
+                getFormattedEditModalProperty={getFormattedEditModalProperty}
             />
 
             {/* Assigned Incharge Display Drawer  */}
