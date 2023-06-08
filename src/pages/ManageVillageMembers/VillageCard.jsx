@@ -1,5 +1,6 @@
 import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
-import { Delete, PermIdentity, Upload } from '@mui/icons-material';
+import { Delete, PermIdentity, Replay, Upload } from '@mui/icons-material';
+import UploadButton from './UploadButton';
 
 export default function VillageCard({
     villageData,
@@ -37,29 +38,29 @@ export default function VillageCard({
                             justifyContent={'center'}
                         >
                             {
-                                villageData.progressStatus.uploadInProgress
-                                    ? <LinearProgress />
-                                    : <Button
-                                        disabled={villageData.mappedPartyPeoplesKey !== ''}
-                                        variant="outlined"
-                                        component="label"
+                                villageData.progressStatus.uploadInProgress &&
+                                <LinearProgress />
+                            }
+                            {
+                                !villageData.progressStatus.uploadInProgress && villageData.mappedPartyPeoplesKey !== ''
+                                    ? <UploadButton
+                                        IconName={Replay}
+                                        onFileChange={null}
                                     >
-                                        <Typography display={{ xs: 'none', sm: 'block' }}>Upload</Typography> <Upload />
-                                        <input
-                                            onChange={(event) => handleVillageMembersCSVUpload(event)}
-                                            type="file"
-                                            accept=".csv"
-                                            hidden
-                                        />
-                                    </Button>
+                                        Re Upload
+                                    </UploadButton>
+                                    : <UploadButton
+                                        IconName={Upload}
+                                        onFileChange={handleVillageMembersCSVUpload}
+                                    >
+                                        Upload
+                                    </UploadButton>
                             }
                         </Box>
                         <Box
                             display="flex"
                             flexDirection={'column'}
                             justifyContent='center'
-                            pl={2}
-                            pr={2}
                         >
                             {
                                 villageData.progressStatus.deleteInProgress
