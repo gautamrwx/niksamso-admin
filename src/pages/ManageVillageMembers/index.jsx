@@ -1,21 +1,27 @@
-import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, Input, LinearProgress, Typography } from '@mui/material';
+import { Box, Container, Drawer, Grid, IconButton, Input, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Close, Delete, Search, Upload } from '@mui/icons-material';
+import { Close, Email, PermIdentity, Search } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import { child, push, ref, update } from 'firebase/database';
 import { db } from '../../misc/firebase';
 import FullScreenMessageText from '../../components/FullScreenMessageText';
+import VillageCard from './VillageCard';
+
+const getFormattedDrawerProperty = (isDrawerOpen, villageName, inchargeEmail, inchargeName) =>
+    ({ isDrawerOpen, villageName, inchargeEmail, inchargeName });
 
 function ManageVillageMembers(props) {
-    const { villages } = useUsersAndVillages();
+    const { users, villages } = useUsersAndVillages();
 
     const [selectedDDUser, setSelectedDDUser] = useState(null);
     const [villageList, setVillageList] = useState([]);
     const [filteredVillageList, setFilteredVillageList] = useState([]);
     const [isDataLoading, setIsDataLoading] = useState(false);
     const [searchBarInputText, setSearchBarInputText] = useState('');
+
+    const [villageInchargeDrawer, setVillageInchargeDrawer] = useState({})
 
     const assignFilteredVillageListData = (searchQuery = null) => {
         const tempVillList = [];
@@ -235,6 +241,11 @@ function ManageVillageMembers(props) {
 
         fr.readAsText(target.files[0]);
     };
+
+    const displayVillageIncharge = ({ villGroupKey, villageName }) => {
+        const { fullName, email } = users.find(el => el.mappedVillGroupKey === villGroupKey);
+        setVillageInchargeDrawer(getFormattedDrawerProperty(true, villageName, email, fullName));
+    }
     // ---- End | Helper Functions ---- //
 
     return (
@@ -285,74 +296,44 @@ function ManageVillageMembers(props) {
 
             <Grid container spacing={{ xs: 1, sm: 2, md: 3 }} columns={{ xs: 2, sm: 3, md: 4, lg: 5 }}>
                 {Array.from(filteredVillageList).map((villageData, index) => (
-                    <Grid item xs={1} sm={1} md={1} lg={1} key={index}>
-                        <Card sx={{ minHeight: 120 }}>
-                            <CardContent >
-                                <Box display={"flex"}>
-                                    <Typography color={'#415468'} fontWeight='bold'>
-                                        {villageData.villageName}
-                                    </Typography>
-                                </Box>
-                                <Box height='2rem'>
-                                    <Typography sx={{ color: '#d81f10', fontSize: 13 }}>
-                                        {villageData.errorMessage}
-                                    </Typography>
-                                </Box>
-                            </CardContent>
-                            <CardActions>
-                                <Box display="flex" flex='1' >
-                                    <Box
-                                        display="flex"
-                                        flexDirection={'column'}
-                                        flex='1'
-                                        justifyContent={'center'}
-                                    >
-                                        {
-                                            villageData.progressStatus.uploadInProgress
-                                                ? <LinearProgress />
-                                                : <Button
-                                                    disabled={villageData.mappedPartyPeoplesKey !== ''}
-                                                    variant="outlined"
-                                                    component="label"
-                                                >
-                                                    <Typography display={{ xs: 'none', sm: 'block' }}>Upload</Typography> <Upload />
-                                                    <input
-                                                        onChange={(event) => handleVillageMembersCSVUpload(event, villageData, index)}
-                                                        type="file"
-                                                        accept=".csv"
-                                                        hidden
-                                                    />
-                                                </Button>
-                                        }
-                                    </Box>
-                                    <Box
-                                        display="flex"
-                                        flexDirection={'column'}
-                                        justifyContent='center'
-                                        pl={2}
-                                        pr={2}
-                                    >
-                                        {
-                                            villageData.progressStatus.deleteInProgress
-                                                ? <CircularProgress color="error" />
-                                                : <IconButton
-                                                    disabled={villageData.mappedPartyPeoplesKey === ''}
-                                                    color='error'
-                                                    type="button"
-                                                    variant="contained"
-                                                    onClick={() => handleDeleteVillageMembers(villageData, index)}
-                                                >
-                                                    <Delete />
-                                                </IconButton>
-                                        }
-                                    </Box>
-                                </Box>
-                            </CardActions>
-                        </Card >
-                    </Grid>
-                ))
-                }
+                    <VillageCard
+                        villageData={villageData}
+                        index={index}
+                        handleVillageInchargeDisplay={() => { displayVillageIncharge(villageData) }}
+                        handleDeleteVillageMembers={() => { handleDeleteVillageMembers(villageData, index) }}
+                        handleVillageMembersCSVUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index) }}
+                    />
+                ))}
             </Grid >
+
+            {/* Assigned Incharge Display Drawer  */}
+            <Drawer
+                anchor={'bottom'}
+                open={villageInchargeDrawer.isDrawerOpen}
+                onClose={() => { setVillageInchargeDrawer({}) }}
+            >
+                <Container maxWidth="xs">
+                    <Box>
+                        <Box display={'flex'} flexDirection={'column'} mb={10} mt={2}>
+                            <Typography fontSize={24}>
+                                {villageInchargeDrawer.villageName}
+                            </Typography>
+                            <Box display={'flex'} flexDirection={'row'} mt={5}>
+                                <PermIdentity />
+                                <Typography ml={2}>
+                                    {villageInchargeDrawer.inchargeName}
+                                </Typography>
+                            </Box>
+                            <Box display={'flex'} flexDirection={'row'}>
+                                <Email />
+                                <Typography ml={2}>
+                                    {villageInchargeDrawer.inchargeEmail}
+                                </Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                </Container>
+            </Drawer>
         </>
     );
 }
