@@ -59,7 +59,7 @@ function InactiveInchargeDeleteConfirmation({
                 error={!isValidPassword}
                 onChange={handleInputChange}
                 variant="outlined">
-                <InputLabel htmlFor="outlined-adornment-password">Old Password</InputLabel>
+                <InputLabel htmlFor="outlined-adornment-password">User Password</InputLabel>
                 <OutlinedInput
                     inputProps={{ maxLength: 12 }}
                     name="password"
@@ -76,7 +76,7 @@ function InactiveInchargeDeleteConfirmation({
                             </IconButton>
                         </InputAdornment>
                     }
-                    label="Old Password"
+                    label="User Password"
                 />
             </FormControl>
 

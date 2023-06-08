@@ -4,7 +4,7 @@ import { DeleteForever } from '@mui/icons-material';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import FullScreenMessageText from '../../components/FullScreenMessageText';
 import { db } from '../../misc/firebase';
-import { child, get, ref } from 'firebase/database';
+import { child, get, ref, update } from 'firebase/database';
 import InactiveInchargeDeleteConfirmation from './InactiveInchargeDeleteConfirmation';
 import { secondaryAuth } from '../../misc/firebase';
 import { deleteUser, fetchSignInMethodsForEmail, signInWithEmailAndPassword, signOut } from 'firebase/auth';
@@ -94,21 +94,33 @@ function ManageIncharges(props) {
         setIsSnackbarOpen(false);
     }
 
-    const deleteRecordFromDatabase = (key, index) => {
-        setInActiveUsers(prev => prev.filter((_, i) => i !== index));
-        console.log('Dele Ok , Del From FromDB');
+    const deleteInactiveUserCollection = (key, index) => {
+        const updates = {}
+
+        updates[`inactiveUsers/${key}`] = null;
+
+        update(ref(db), updates).then(x => {
+            setInActiveUsers(prev => prev.filter((_, i) => i !== index));
+        }).catch((error) => {
+            toggleProgressIndicator(index, 'DELETE', false);
+            setErrorMessage(index, 'Failed To Dtelete This From Database');
+        });
     }
 
     const performDeleteUserAction = (selectedIndex, password) => {
+        // Reset Previous Message And Start Processing 
+        toggleProgressIndicator(selectedIndex, 'DELETE', true);
+
         const { email, key } = inActiveUsers[selectedIndex];
 
+        // [1] Delete from auth
         signInWithEmailAndPassword(secondaryAuth, email, password)
             .then((user) => {
+                // [2] Delete from database
                 const userToDelete = secondaryAuth.currentUser;
 
                 deleteUser(userToDelete).then(() => {
-                    deleteRecordFromDatabase(key, selectedIndex);
-                    toggleProgressIndicator(selectedIndex, 'DELETE', false);
+                    deleteInactiveUserCollection(key, selectedIndex);
                     signOut(secondaryAuth);
                 }).catch((error) => {
                     setErrorMessage(selectedIndex, 'Failed To Delete, Do It Manually');
@@ -116,7 +128,7 @@ function ManageIncharges(props) {
                 });
             }).catch((error) => {
                 if (error.code === 'auth/user-not-found') {
-                    deleteRecordFromDatabase(key, selectedIndex);
+                    deleteInactiveUserCollection(key, selectedIndex);
                 } else if (error.code === "auth/wrong-password") {
                     setErrorMessage(selectedIndex, 'Invalid Password');
                 } else {
@@ -153,23 +165,21 @@ function ManageIncharges(props) {
     }
 
     const handleDeleteInactiveUser = async (inactiveUser, index) => {
-        // Reset Previous Message And Start Processing 
-        toggleProgressIndicator(index, 'DELETE', true);
-        setErrorMessage(index, '');
-
-        // if user not exist in auth , Delte that directly
+        // if user not exist in auth , Delete that directly fromDatabase
         try {
+            toggleProgressIndicator(index, 'DELETE', true);
             const methods = await fetchSignInMethodsForEmail(secondaryAuth, inactiveUser.email);
             if (methods.length === 0) {
-                deleteRecordFromDatabase(inactiveUser.key, index);
+                deleteInactiveUserCollection(inactiveUser.key, index);
                 return;
             }
         } catch (error) {
-            setErrorMessage(index, 'Failed To Delete, Do It Manually');
+            setErrorMessage(index, 'Failed To Delete Data, Do It Manually');
             toggleProgressIndicator(index, 'DELETE', false);
             return;
         }
 
+        toggleProgressIndicator(index, 'DELETE', false);
         showDeleteConfirmationPopup(inactiveUser, index)
     }
 

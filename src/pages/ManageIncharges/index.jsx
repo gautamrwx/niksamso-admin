@@ -170,7 +170,6 @@ function ManageIncharges(props) {
         /**
          * --- Delete Data Of Old User
          */
-        debugger;
 
         const previousUserProfileInfo = {
             email: previousUser.email,
