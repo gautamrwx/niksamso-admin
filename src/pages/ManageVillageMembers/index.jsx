@@ -1,6 +1,6 @@
-import { Box, Container, Drawer, Grid, IconButton, Input, Modal, Typography } from '@mui/material';
+import { Box, Grid, IconButton, Input } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Close, Email, PermIdentity, Search } from '@mui/icons-material';
+import { Close, Search } from '@mui/icons-material';
 import csv from 'csvtojson';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
@@ -10,6 +10,7 @@ import FullScreenMessageText from '../../components/FullScreenMessageText';
 import VillageCard from './VillageCard';
 import AssignedInchargeDrawer from './AssignedInchargeDrawer';
 import EditVillageModal from './EditVillageModal';
+import { deleteObject, getStorage, listAll, ref as StorageRef } from 'firebase/storage'
 
 const getFormattedDrawerProperty = (
     isDrawerOpen = false,
@@ -22,8 +23,9 @@ const getFormattedEditModalProperty = (
     isEditModalOpen = false,
     villageKey = null,
     villGroupKey = null,
-    villageName = null
-) => ({ isEditModalOpen, villageKey, villGroupKey, villageName });
+    villageName = null,
+    index = null
+) => ({ isEditModalOpen, villageKey, villGroupKey, villageName, index });
 
 function ManageVillageMembers(props) {
     const { users, villages } = useUsersAndVillages();
@@ -51,11 +53,8 @@ function ManageVillageMembers(props) {
                 villGroupKey,
                 villageName,
                 mappedPartyPeoplesKey,
-                'errorMessage': null,
-                'progressStatus': {
-                    deleteInProgress: false,
-                    uploadInProgress: false
-                }
+                errorMessage: null,
+                progressStatus: false,
             });
         });
 
@@ -107,18 +106,9 @@ function ManageVillageMembers(props) {
     }
     //  -- [End] Search Operation Handling --
 
-    const toggleProgressIndicator = (index, progressType, condition) => {
+    const toggleProgressIndicator = (index, condition) => {
         setFilteredVillageList((prevArray) => {
-            switch (progressType) {
-                case 'UPLOAD':
-                    prevArray[index].progressStatus.uploadInProgress = condition;
-                    break;
-                case 'DELETE':
-                    prevArray[index].progressStatus.deleteInProgress = condition;
-                    break;
-                default:
-                    break;
-            }
+            prevArray[index].progressStatus = condition;
             return [...prevArray]
         });
     }
@@ -149,9 +139,9 @@ function ManageVillageMembers(props) {
         // <==== | Update All Data In Single Shot | ====>
         update(ref(db), updates).then(x => {
             resetVillagePeopleMapping(selectedIndex, newPartyPeopleKey)
-            toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
+            toggleProgressIndicator(selectedIndex, false);
         }).catch((error) => {
-            toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
+            toggleProgressIndicator(selectedIndex, false);
         });
     }
 
@@ -226,7 +216,7 @@ function ManageVillageMembers(props) {
                     const { isValidData, message } = verifyData(inputCSVLines, villageName);
                     if (!isValidData) {
                         setErrorMessage(selectedIndex, message);
-                        toggleProgressIndicator(selectedIndex, 'UPLOAD', false);
+                        toggleProgressIndicator(selectedIndex, false);
                     }
                     // 1. Execute After Validation Successful  
                     else {
@@ -241,7 +231,7 @@ function ManageVillageMembers(props) {
     };
 
     const handleVillageMembersCSVReUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex) => {
-        debugger
+
     }
 
     const displayVillageIncharge = ({ villGroupKey, villageName }) => {
@@ -249,9 +239,58 @@ function ManageVillageMembers(props) {
         setVillageInchargeDrawer(getFormattedDrawerProperty(true, villageName, email, fullName));
     }
 
-    const handleEditButtonPress = ({ villageKey, villGroupKey, villageName }) => {
+    const handleDeleteVillageMembers = async (villageKey, selectedIndex) => {
+        toggleProgressIndicator(selectedIndex, true);
+
+        // Get Mapped Party People Key For Selected Village
+        const { mappedPartyPeoplesKey, villGroupKey } = villages.find(x => x.villageKey = villageKey);
+
+        // Delete All Images of Village
+        const storage = getStorage();
+        const listRef = StorageRef(storage, `/ProfilePictures/VillagePartyMembers/${villageKey}`);
+
+        const isDeletedMembersProfilePic = await new Promise((resolve, _) => {
+            listAll(listRef).then(({ items }) => {
+                const totalFiles = items.length;
+                let deletedFiles = 0;
+
+                if (totalFiles === 0) {
+                    resolve(true);
+                    return;
+                }
+
+                items.map((item) => {
+                    deleteObject(item).then(() => {
+                        ++deletedFiles === totalFiles && resolve(true);
+                    }).catch((error) => {
+                        resolve(false);
+                    });
+                });
+            }).catch((e) => {
+                resolve(false)
+            })
+        })
+
+        if (!isDeletedMembersProfilePic) {
+            setErrorMessage(selectedIndex, 'Failed Delete Profile Photos');
+            return;
+        }
+
+        const updates = {};
+        mappedPartyPeoplesKey && (updates['/partyPeoples/' + mappedPartyPeoplesKey] = null);
+        updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = "";
+
+        // <==== | Update All Data In Single Shot | ====>
+        update(ref(db), updates).then(x => {
+            // Do Nothing // Data Will Auto UpDate
+        }).catch((error) => {
+            setErrorMessage(selectedIndex, 'Failed To Erase Data , Please Try Again Later.');
+        });
+    }
+
+    const handleEditButtonPress = ({ villageKey, villGroupKey, villageName }, index) => {
         setEditVillageModal(
-            getFormattedEditModalProperty(true, villageKey, villGroupKey, villageName)
+            getFormattedEditModalProperty(true, villageKey, villGroupKey, villageName, index)
         );
     }
 
@@ -310,7 +349,7 @@ function ManageVillageMembers(props) {
                         villageData={villageData}
                         index={index}
                         handleVillageInchargeDisplay={() => { displayVillageIncharge(villageData) }}
-                        handleEditButtonPress={() => { handleEditButtonPress(villageData) }}
+                        handleEditButtonPress={() => { handleEditButtonPress(villageData, index) }}
                         handleVillageMembersCSVUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index) }}
                         handleVillageMembersCSVReUpload={(event) => { handleVillageMembersCSVReUpload(event, villageData, index) }}
                     />
@@ -322,6 +361,7 @@ function ManageVillageMembers(props) {
                 editVillageModal={editVillageModal}
                 setEditVillageModal={setEditVillageModal}
                 getFormattedEditModalProperty={getFormattedEditModalProperty}
+                handleDeleteVillageMembers={handleDeleteVillageMembers}
             />
 
             {/* Assigned Incharge Display Drawer  */}

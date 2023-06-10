@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Modal, Popper, TextField, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, Popper, TextField, Typography } from "@mui/material";
 import { useUsersAndVillages } from "../../context/usersAndVillages.context";
 import { useEffect, useState } from "react";
 import { ref, update } from "firebase/database";
@@ -7,15 +7,17 @@ import { db } from "../../misc/firebase";
 export default function EditVillageModal({
     editVillageModal,
     setEditVillageModal,
-    getFormattedEditModalProperty
+    getFormattedEditModalProperty,
+    handleDeleteVillageMembers
 }) {
     const { users, villages } = useUsersAndVillages();
 
-    const { isEditModalOpen, villageKey, villGroupKey, villageName } = editVillageModal;
+    const { isEditModalOpen, villageKey, villGroupKey, villageName, index } = editVillageModal;
 
     const [currentAssignedIncharge, setCurrentAssignedIncharge] = useState({});
     const [allInchargeList, setAllInchargeList] = useState([]);
     const [selectedIncharge, setSelectedIncharge] = useState(null);
+    const [eraseDataConfrimation, setEraseDataConfrimation] = useState(false)
 
     useEffect(() => {
         if (villGroupKey) {
@@ -47,7 +49,7 @@ export default function EditVillageModal({
         const oldVillageGroupKey = villGroupKey;
 
         // Get New Village Data to Update
-        const currentVillageData = villages.find(x => x.villageKey === villageKey);
+        const currentVillageData = villages.find(el => el.villageKey === villageKey);
         delete currentVillageData['villGroupKey'];
         delete currentVillageData['villageKey'];
 
@@ -68,6 +70,12 @@ export default function EditVillageModal({
         }).catch((error) => {
 
         });
+    }
+
+    const onDeleteConfirmationButtonClick = () => {
+        setEraseDataConfrimation(false);
+        handleCloseModal();
+        handleDeleteVillageMembers(villageKey, index);
     }
 
     /**----- UI Component [Start]---- */
@@ -110,11 +118,44 @@ export default function EditVillageModal({
                     renderInput={(params) => <TextField {...params} label="Incharge" />}
                 />
 
-                <Button onClick={handleVillageInchargeChange}>
+                <Button
+                    disabled={!selectedIncharge}
+                    onClick={handleVillageInchargeChange}
+                >
                     Submit
                 </Button>
 
-                <Button onClick={handleCloseModal}>Close</Button>
+                <Box>
+                    <Button onClick={() => { setEraseDataConfrimation(true) }}>
+                        Erase
+                    </Button>
+
+                    {
+                        eraseDataConfrimation &&
+
+                        <Dialog
+                            open={true}
+                            onClose={null}
+                        >
+                            <DialogTitle >
+                                Confirmation
+                            </DialogTitle>
+                            <DialogContent>
+                                <DialogContentText >
+                                    Are you sure, This will clear all Party Members And General Members Data
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={() => { setEraseDataConfrimation(false) }}>Cancel</Button>
+                                <Button onClick={onDeleteConfirmationButtonClick} autoFocus>Confim</Button>
+                            </DialogActions>
+                        </Dialog>
+                    }
+                </Box>
+
+                <Button onClick={handleCloseModal}>
+                    Close
+                </Button>
             </Box>
         </Modal>
     )

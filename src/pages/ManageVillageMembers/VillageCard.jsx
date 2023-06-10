@@ -31,52 +31,69 @@ export default function VillageCard({
                     </Box>
                 </CardContent>
                 <CardActions>
-                    <Box display="flex" flex='1' >
+
+                    {
+                        villageData.progressStatus &&
                         <Box
                             display="flex"
                             flexDirection={'column'}
                             flex='1'
                             justifyContent={'center'}
                         >
-                            {
-                                villageData.progressStatus.uploadInProgress &&
-                                <LinearProgress />
-                            }
-                            {
-                                !villageData.progressStatus.uploadInProgress && villageData.mappedPartyPeoplesKey !== ''
-                                    ? <UploadButton
-                                        IconName={Replay}
-                                        onFileChange={handleVillageMembersCSVReUpload}
-                                    >
-                                        Re Upload
-                                    </UploadButton>
-                                    : <UploadButton
-                                        IconName={Upload}
-                                        onFileChange={handleVillageMembersCSVUpload}
-                                    >
-                                        Upload
-                                    </UploadButton>
-                            }
+                            <LinearProgress />
                         </Box>
-                        <Box
-                            display="flex"
-                            flexDirection={'column'}
-                            justifyContent='center'
-                        >
-                            {
-                                villageData.progressStatus.deleteInProgress
-                                    ? <CircularProgress color="error" />
-                                    : <IconButton
-                                        color='primary'
-                                        type="button"
-                                        variant="contained"
-                                        onClick={handleEditButtonPress}
-                                    >
-                                        <Edit />
-                                    </IconButton>
-                            }
-                        </Box>
-                    </Box>
+                    }
+
+
+                    {
+                        !villageData.progressStatus &&
+
+                        <>
+                            <Box
+                                display="flex"
+                                flexDirection={'column'}
+                                flex='1'
+                                justifyContent={'center'}
+                            >
+                                {
+                                    villageData.mappedPartyPeoplesKey !== ''
+                                        ? <UploadButton
+                                            IconName={Replay}
+                                            onFileChange={handleVillageMembersCSVReUpload}
+                                        >
+                                            Re Upload
+                                        </UploadButton>
+                                        : <UploadButton
+                                            IconName={Upload}
+                                            onFileChange={handleVillageMembersCSVUpload}
+                                        >
+                                            Upload
+                                        </UploadButton>
+                                }
+                            </Box>
+                            <Box
+                                display="flex"
+                                flexDirection={'column'}
+                                justifyContent='center'
+                            >
+                                {
+                                    villageData.progressStatus.deleteInProgress
+                                        ? <CircularProgress color="error" />
+                                        : <IconButton
+                                            color='primary'
+                                            type="button"
+                                            variant="contained"
+                                            onClick={handleEditButtonPress}
+                                        >
+                                            <Edit />
+                                        </IconButton>
+                                }
+                            </Box>
+                        </>
+                    }
+
+
+
                 </CardActions>
             </Card >
         </Grid>
