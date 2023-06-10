@@ -3,13 +3,15 @@ import { useUsersAndVillages } from "../../context/usersAndVillages.context";
 import { useEffect, useState } from "react";
 import { ref, update } from "firebase/database";
 import { db } from "../../misc/firebase";
-import { EarbudsBatterySharp, PermIdentity } from "@mui/icons-material";
+import { AutoFixHigh, PermIdentity } from "@mui/icons-material";
 
 export default function EditVillageModal({
     editVillageModal,
     setEditVillageModal,
     getFormattedEditModalProperty,
-    handleDeleteVillageMembers
+    handleDeleteVillageMembers,
+    toggleProgressIndicator,
+    setErrorMessage
 }) {
     const { users, villages } = useUsersAndVillages();
 
@@ -25,13 +27,14 @@ export default function EditVillageModal({
             const resp = users.find(el => el.mappedVillGroupKey === villGroupKey);
             const nonresp = users.filter(el => el.mappedVillGroupKey !== villGroupKey);
 
-            nonresp.map(option => {
-                option['firstLetter'] = option.email[0].toUpperCase();
-            });
+            nonresp.map(option =>
+                option['firstLetter'] = option.email[0].toUpperCase()
+            );
 
             setCurrentAssignedIncharge(resp);
             setAllInchargeList(nonresp);
         }
+        // eslint-disable-next-line
     }, [villGroupKey]);
 
     const handleCloseModal = () => {
@@ -43,6 +46,7 @@ export default function EditVillageModal({
     }
 
     const handleVillageInchargeChange = () => {
+        toggleProgressIndicator(index, true);
         /**
          * --- Information Gathering
          */
@@ -67,9 +71,12 @@ export default function EditVillageModal({
 
         // <==== | Update All Data In Single Shot | ====>
         update(ref(db), updates).then(x => {
+            toggleProgressIndicator(index, false);
             handleCloseModal();
         }).catch((error) => {
-
+            toggleProgressIndicator(index, false);
+            setErrorMessage(index, 'Failed To Change Incharge');
+            handleCloseModal();
         });
     }
 
@@ -146,7 +153,7 @@ export default function EditVillageModal({
                             fullWidth
                             variant="outlined"
                             onClick={() => { setEraseDataConfrimation(true) }}>
-                            Erase Assigned Members <EarbudsBatterySharp />
+                            Erase Assigned Members <AutoFixHigh />
                         </Button>
 
                         {

@@ -362,6 +362,8 @@ function ManageVillageMembers(props) {
                 setEditVillageModal={setEditVillageModal}
                 getFormattedEditModalProperty={getFormattedEditModalProperty}
                 handleDeleteVillageMembers={handleDeleteVillageMembers}
+                toggleProgressIndicator={toggleProgressIndicator}
+                setErrorMessage={setErrorMessage}
             />
 
             {/* Assigned Incharge Display Drawer  */}
