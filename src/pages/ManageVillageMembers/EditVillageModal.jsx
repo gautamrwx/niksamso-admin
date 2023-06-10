@@ -3,6 +3,7 @@ import { useUsersAndVillages } from "../../context/usersAndVillages.context";
 import { useEffect, useState } from "react";
 import { ref, update } from "firebase/database";
 import { db } from "../../misc/firebase";
+import { EarbudsBatterySharp, PermIdentity } from "@mui/icons-material";
 
 export default function EditVillageModal({
     editVillageModal,
@@ -102,60 +103,86 @@ export default function EditVillageModal({
                     bgcolor: 'background.paper',
                 }}
             >
-                <Typography>{villageName}</Typography>
-                <Typography>{currentAssignedIncharge.email}</Typography>
+                <Box p={2}>
 
-                <Autocomplete
-                    fullWidth
-                    PopperComponent={PopperMy}
-                    size='small'
-                    blurOnSelect={true}
-                    value={selectedIncharge}
-                    onChange={(d, x, s) => setSelectedIncharge(x)}
-                    options={allInchargeList.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
-                    groupBy={(option) => option.firstLetter}
-                    getOptionLabel={(option) => option.email}
-                    renderInput={(params) => <TextField {...params} label="Incharge" />}
-                />
+                    <Typography color='#8896a4' fontWeight='bold' fontSize={24}>
+                        {villageName}
+                    </Typography>
+                    <Box display={'flex'} flexDirection={'row'}>
+                        <PermIdentity sx={{ color: '#133168' }} />
+                        <Typography color={'#133168'} ml={2}>
+                            {currentAssignedIncharge.email}
+                        </Typography>
+                    </Box>
 
-                <Button
-                    disabled={!selectedIncharge}
-                    onClick={handleVillageInchargeChange}
-                >
-                    Submit
-                </Button>
+                    <Autocomplete
+                        sx={{ mt: 2 }}
+                        fullWidth
+                        PopperComponent={PopperMy}
+                        size='small'
+                        blurOnSelect={true}
+                        value={selectedIncharge}
+                        onChange={(d, x, s) => setSelectedIncharge(x)}
+                        options={allInchargeList.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+                        groupBy={(option) => option.firstLetter}
+                        getOptionLabel={(option) => option.email}
+                        renderInput={(params) => <TextField {...params} label="Change Incharge" />}
+                    />
 
-                <Box>
-                    <Button onClick={() => { setEraseDataConfrimation(true) }}>
-                        Erase
+                    <Button
+                        sx={{ mt: 2 }}
+                        fullWidth
+                        variant="outlined"
+                        disabled={!selectedIncharge}
+                        onClick={handleVillageInchargeChange}
+                    >
+                        Assign New Incharge
                     </Button>
 
-                    {
-                        eraseDataConfrimation &&
+                    <Box>
+                        <Button
+                            color="error"
+                            sx={{ mt: 2 }}
+                            fullWidth
+                            variant="outlined"
+                            onClick={() => { setEraseDataConfrimation(true) }}>
+                            Erase Assigned Members <EarbudsBatterySharp />
+                        </Button>
 
-                        <Dialog
-                            open={true}
-                            onClose={null}
-                        >
-                            <DialogTitle >
-                                Confirmation
-                            </DialogTitle>
-                            <DialogContent>
-                                <DialogContentText >
-                                    Are you sure, This will clear all Party Members And General Members Data
-                                </DialogContentText>
-                            </DialogContent>
-                            <DialogActions>
-                                <Button onClick={() => { setEraseDataConfrimation(false) }}>Cancel</Button>
-                                <Button onClick={onDeleteConfirmationButtonClick} autoFocus>Confim</Button>
-                            </DialogActions>
-                        </Dialog>
-                    }
+                        {
+                            eraseDataConfrimation &&
+
+                            <Dialog
+                                open={true}
+                                onClose={null}
+                            >
+                                <DialogTitle >
+                                    Confirmation
+                                </DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText >
+                                        Are you sure, This will clear all Party Members And General Members Data
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={() => { setEraseDataConfrimation(false) }}>Cancel</Button>
+                                    <Button onClick={onDeleteConfirmationButtonClick} autoFocus>Confim</Button>
+                                </DialogActions>
+                            </Dialog>
+                        }
+                    </Box>
+
+                    <Button
+                        onClick={handleCloseModal}
+                        color="primary"
+                        sx={{ mt: 4 }}
+                        fullWidth
+                        variant="outlined"
+                    >
+                        Close
+                    </Button>
+
                 </Box>
-
-                <Button onClick={handleCloseModal}>
-                    Close
-                </Button>
             </Box>
         </Modal>
     )
