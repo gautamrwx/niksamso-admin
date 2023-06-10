@@ -10,7 +10,7 @@ import FullScreenMessageText from '../../components/FullScreenMessageText';
 import VillageCard from './VillageCard';
 import AssignedInchargeDrawer from './AssignedInchargeDrawer';
 import EditVillageModal from './EditVillageModal';
-import { deleteObject, getStorage, listAll, ref as StorageRef } from 'firebase/storage'
+import { deleteObject, getDownloadURL, getStorage, listAll, ref as StorageRef } from 'firebase/storage'
 
 const getFormattedDrawerProperty = (
     isDrawerOpen = false,
@@ -128,20 +128,74 @@ function ManageVillageMembers(props) {
     }
 
     // ---- Start | Firebase Business Logic ---- //  
-    const uploadData = (jsonArr, villageKey, villGroupKey, selectedIndex) => {
-        const peopleInformation = getPreapredData(jsonArr);
+    const uploadData = async (inputCSVLines, villageKey, villGroupKey, selectedIndex, isReupload) => {
+        toggleProgressIndicator(selectedIndex, true);
 
+        const peopleInformation = getPreapredData(inputCSVLines);
         const updates = {};
-        const newPartyPeopleKey = push(child(ref(db), 'partyPeoples')).key;
-        updates['/partyPeoples/' + newPartyPeopleKey] = peopleInformation;
-        updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = newPartyPeopleKey;
+        debugger;
+        // If data is reUploading , Fetch old profile Pic URL and set
+        if (isReupload) {
+            const totalPartyMembers = peopleInformation.partyMembers.length;
+
+            const storage = getStorage();
+            const listRef = StorageRef(storage, `/ProfilePictures/VillagePartyMembers/${villageKey}`);
+            const isFilesReAssigned = await new Promise((resolve, _) => {
+                // Get All Old Profile Pic Of Uploaded Village and assign to new
+                listAll(listRef).then(async ({ items }) => {
+                    const deletePromise = [];
+
+                    for (let i = 0; i < items.length; i++) {
+                        const itemRef = items[i];
+                        const fileName = (itemRef.fullPath).split('/').at(-1);
+
+                        const fileIndex = Number(fileName.split('_')[0]);
+                        const fileSuffix = fileName.split('_')[1].split('.')[0];
+
+                        if (fileIndex < totalPartyMembers) {
+                            const downloadUrl = await getDownloadURL(StorageRef(storage, itemRef));
+                            peopleInformation.partyMembers[fileIndex][fileSuffix] = downloadUrl;
+                        }
+                        else {
+                            deletePromise.push(deleteObject(itemRef));
+                        }
+                    }
+
+                    // delete Extra files
+                    Promise.all(deletePromise).then(() => {
+                        resolve(true);
+                    }).catch(() => {
+                        resolve(false)
+                    })
+                }).catch((e) => {
+                    resolve(false);
+                })
+            });
+
+            if (!isFilesReAssigned) {
+                setErrorMessage(selectedIndex, 'Failed to delete existing files');
+                return;
+            }
+
+            // Update existing member Data
+            const mappedPartyPeoplesKey = villages.find(el => el.villageKey === villageKey).mappedPartyPeoplesKey;
+            updates['/partyPeoples/' + mappedPartyPeoplesKey] = peopleInformation;
+        }
+        else {
+            // Create new member Data
+            const newPartyPeopleKey = push(child(ref(db), 'partyPeoples')).key;
+            updates['/partyPeoples/' + newPartyPeopleKey] = peopleInformation;
+            updates['/villageGroupList/' + villGroupKey + '/' + villageKey + '/mappedPartyPeoplesKey'] = newPartyPeopleKey;
+        }
 
         // <==== | Update All Data In Single Shot | ====>
         update(ref(db), updates).then(x => {
-            resetVillagePeopleMapping(selectedIndex, newPartyPeopleKey)
-            toggleProgressIndicator(selectedIndex, false);
+            // On Update new Data Progress indicator will be auto set
+            // On Create new Data stop progress indicator
+            isReupload && toggleProgressIndicator(selectedIndex, false);
         }).catch((error) => {
             toggleProgressIndicator(selectedIndex, false);
+            setErrorMessage(selectedIndex, 'Failed to update database');
         });
     }
 
@@ -177,8 +231,8 @@ function ManageVillageMembers(props) {
 
         jsonArr = jsonArr.slice(1); // Delete First Index
 
-        const partyMembersJsonArr = jsonArr.filter(x => x[1] !== 'Members');
-        const generalMembersJsonArr = jsonArr.filter(x => x[1] === 'Members');
+        const partyMembersJsonArr = jsonArr.filter(x => x[1] !== 'Members' && x[1] !== '' && x[2] !== '');
+        const generalMembersJsonArr = jsonArr.filter(x => x[1] === 'Members' && x[2] !== '');
 
         partyMembersJsonArr.forEach(x => {
             arrPartyMem.push({
@@ -205,7 +259,7 @@ function ManageVillageMembers(props) {
         }
     }
 
-    const handleVillageMembersCSVUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex) => {
+    const handleVillageMembersCSVUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex, isReupload = false) => {
         const fr = new FileReader();
 
         fr.onload = function () {
@@ -221,7 +275,7 @@ function ManageVillageMembers(props) {
                     // 1. Execute After Validation Successful  
                     else {
                         setErrorMessage(selectedIndex, '');
-                        uploadData(inputCSVLines, villageKey, villGroupKey, selectedIndex);
+                        uploadData(inputCSVLines, villageKey, villGroupKey, selectedIndex, isReupload);
                     }
                 })
         }
@@ -229,10 +283,6 @@ function ManageVillageMembers(props) {
         if (target.files.length > 0)
             fr.readAsText(target.files[0]);
     };
-
-    const handleVillageMembersCSVReUpload = ({ target }, { villageKey, villGroupKey, villageName }, selectedIndex) => {
-
-    }
 
     const displayVillageIncharge = ({ villGroupKey, villageName }) => {
         const { fullName, email } = users.find(el => el.mappedVillGroupKey === villGroupKey);
@@ -243,7 +293,7 @@ function ManageVillageMembers(props) {
         toggleProgressIndicator(selectedIndex, true);
 
         // Get Mapped Party People Key For Selected Village
-        const { mappedPartyPeoplesKey, villGroupKey } = villages.find(x => x.villageKey = villageKey);
+        const { mappedPartyPeoplesKey, villGroupKey } = villages.find(x => x.villageKey === villageKey);
 
         // Delete All Images of Village
         const storage = getStorage();
@@ -282,8 +332,9 @@ function ManageVillageMembers(props) {
 
         // <==== | Update All Data In Single Shot | ====>
         update(ref(db), updates).then(x => {
-            // Do Nothing // Data Will Auto UpDate
+            toggleProgressIndicator(selectedIndex, false);
         }).catch((error) => {
+            toggleProgressIndicator(selectedIndex, false);
             setErrorMessage(selectedIndex, 'Failed To Erase Data , Please Try Again Later.');
         });
     }
@@ -351,7 +402,7 @@ function ManageVillageMembers(props) {
                         handleVillageInchargeDisplay={() => { displayVillageIncharge(villageData) }}
                         handleEditButtonPress={() => { handleEditButtonPress(villageData, index) }}
                         handleVillageMembersCSVUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index) }}
-                        handleVillageMembersCSVReUpload={(event) => { handleVillageMembersCSVReUpload(event, villageData, index) }}
+                        handleVillageMembersCSVReUpload={(event) => { handleVillageMembersCSVUpload(event, villageData, index, true) }}
                     />
                 ))}
             </Grid >
