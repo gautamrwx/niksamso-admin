@@ -9,6 +9,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import styled from '@emotion/styled';
 import { child, push, ref, update } from 'firebase/database';
 import inchargeCsvUplDemo from '../../images/inchargeCsvUplDemo.jpg'
+import { emailValidator } from '../../misc/emailPasswordValidator';
 
 // check duplicate emails and villages
 const findDuplicateArrElement = arry => {
@@ -59,6 +60,15 @@ function CreateIncharges(props) {
             if (lineItem[1] !== '') allVillages.push(lineItem[1]);
         });
 
+        // Check Invalid Emails
+        let invalidEmails = '';
+        allEmails.forEach(email => {
+            if (!emailValidator(email)) {
+                invalidEmails += email + ', ';
+            }
+        });
+
+
         // Check Duplicate && Exiting Emails.
         let existingEmails = '';
         users.forEach(user => {
@@ -86,6 +96,7 @@ function CreateIncharges(props) {
         });
 
         let finalMessage = [];
+        if (invalidEmails !== '') finalMessage.push(`Invalid email entries for ( ${invalidEmails.slice(0, -2)} ).`);
         if (duplicateEmails !== '') finalMessage.push(`Multiple email entries for ( ${duplicateEmails.slice(0, -2)} ).`);
         if (existingEmails !== '') finalMessage.push(`Email ( ${existingEmails.slice(0, -2)} ) already exist.`);
         if (duplicateVillages !== '') finalMessage.push(`Multiple village entries for ( ${duplicateVillages.slice(0, -2)} ).`);
