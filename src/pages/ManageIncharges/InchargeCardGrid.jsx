@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, Card, CardActions, CardContent, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
-import { ListAlt, PersonAdd, Sync } from '@mui/icons-material';
+import { ListAlt, PersonAdd } from '@mui/icons-material';
 
 export default function InchargeCardGrid({
     inchargeData,

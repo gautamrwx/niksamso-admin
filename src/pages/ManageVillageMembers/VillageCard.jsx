@@ -1,5 +1,5 @@
-import { Box, Button, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
-import { Delete, Edit, PermIdentity, Replay, Upload } from '@mui/icons-material';
+import { Box, Card, CardActions, CardContent, CircularProgress, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
+import { Edit, PermIdentity } from '@mui/icons-material';
 import UploadButton from './UploadButton';
 
 export default function VillageCard({

@@ -113,13 +113,6 @@ function ManageVillageMembers(props) {
         });
     }
 
-    const resetVillagePeopleMapping = (index, condition) => {
-        setFilteredVillageList((prevArray) => {
-            prevArray[index].mappedPartyPeoplesKey = condition;
-            return [...prevArray];
-        });
-    }
-
     const setErrorMessage = (index, errorMessage = null) => {
         setFilteredVillageList((prevArray) => {
             prevArray[index].errorMessage = errorMessage;
@@ -133,7 +126,6 @@ function ManageVillageMembers(props) {
 
         const peopleInformation = getPreapredData(inputCSVLines);
         const updates = {};
-        debugger;
         // If data is reUploading , Fetch old profile Pic URL and set
         if (isReupload) {
             const totalPartyMembers = peopleInformation.partyMembers.length;
@@ -309,7 +301,7 @@ function ManageVillageMembers(props) {
                     return;
                 }
 
-                items.map((item) => {
+                items.forEach((item) => {
                     deleteObject(item).then(() => {
                         ++deletedFiles === totalFiles && resolve(true);
                     }).catch((error) => {

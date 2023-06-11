@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, InputLabel, OutlinedInput, Typography } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, OutlinedInput } from '@mui/material';
 import { useState } from 'react';
 import { emailValidator } from '../../misc/emailPasswordValidator';
 

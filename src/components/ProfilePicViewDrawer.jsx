@@ -26,7 +26,7 @@ export default function ProfilePicViewDrawer({
 
     useEffect(() => {
         setCurrentProfilePic(profilePicFull)
-    }, [profilePicFull]);
+    }, [profilePicDrawerData]);
 
     /**
      * === Profile Pic File Processing And Uploading ===

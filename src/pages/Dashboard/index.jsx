@@ -106,6 +106,9 @@ function Dashboard(props) {
                 if (!window.plugins) break;
                 window.plugins.socialsharing.shareWithOptions({ message: stringContactInfo }, null, null);
                 break;
+            default:
+                break;
+
         }
     }
 

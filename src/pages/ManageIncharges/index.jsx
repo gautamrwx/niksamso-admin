@@ -1,6 +1,6 @@
-import { Alert, Avatar, Box, Button, Card, CardActions, CardContent, Container, Drawer, Grid, IconButton, LinearProgress, List, ListItem, ListItemButton, ListItemText, Modal, Snackbar, Typography } from '@mui/material';
+import { Alert, Box, Container, Drawer, Grid, List, ListItem, ListItemButton, ListItemText, Modal, Snackbar, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Email, ListAlt, PermIdentity, Sync } from '@mui/icons-material';
+import { Email, PermIdentity } from '@mui/icons-material';
 import { useUsersAndVillages } from '../../context/usersAndVillages.context';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import NewEmailInput from './NewEmailInput';
