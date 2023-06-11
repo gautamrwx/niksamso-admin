@@ -4,11 +4,26 @@ import { db } from '../../misc/firebase';
 import TabPanel from './TabPanel';
 import GeneralMembersView from './GeneralMembersView';
 import PartyMembersView from './PartyMembersView';
-import { Box, Container, Drawer, IconButton, List, ListItem, ListItemText, Typography, } from '@mui/material';
-import { Call, ContentCopy, Message, Share, WhatsApp } from '@mui/icons-material';
+import { Box, Button, Container, Drawer, IconButton, List, ListItem, ListItemText, Typography, } from '@mui/material';
+import { Call, ContentCopy, Download, Message, Share, WhatsApp } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import CustomAppBar from '../../components/AppBarComponent/CustomAppBar';
 import FullScreenMessageText from '../../components/FullScreenMessageText';
+import { Parser } from '@json2csv/plainjs';
+
+const csvDownlodHelper = (text, fileType, fileName) => {
+    var blob = new Blob([text], { type: fileType });
+    var a = document.createElement('a');
+    a.download = fileName;
+    a.href = URL.createObjectURL(blob);
+    a.dataset.downloadurl = [fileType, a.download, a.href].join(':');
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+}
+
 
 function Dashboard(props) {
     const [partyPeoples, setPartyPeoples] = useState(null);
@@ -95,6 +110,8 @@ function Dashboard(props) {
     }
 
     const handleVillageSelectionChange = (selectedVillage = null) => {
+        setPartyPeoples(null); // Reset old data before new loading
+
         if (selectedVillage === null || !selectedVillage.mappedPartyPeoplesKey) {
             setSelectedVillageName(null);
             setSelectedVillageKey(null);
@@ -129,6 +146,51 @@ function Dashboard(props) {
     }
     // ===< Business Logic [End] >===
 
+    //====< MISC >====
+    const downloadCSVFile = () => {
+        const csvJSONData = [];
+        // Preape JSON without Array FOR CSV Conversion
+        (partyPeoples.partyMembers.concat(partyPeoples.generalMembers)).forEach(
+            ({ age, fullName, mobileNumber, post, youthGeneral }) => {
+
+                const mobileNumberObj = {
+                    'Mobile Number1': '',
+                    'Mobile Number2': '',
+                    'Mobile Number3': '',
+                    'Mobile Number4': '',
+                    'Mobile Number5': ''
+                }
+                const mobNumbObjKeys = Object.keys(mobileNumberObj);
+
+                mobileNumber.forEach((el, index) => {
+                    mobileNumberObj[mobNumbObjKeys[index]] = el
+                });
+
+                csvJSONData.push({
+                    'Post': post ? post : 'Members',
+                    'Name': fullName,
+                    'Age': age,
+                    ...mobileNumberObj,
+                    'GENERAL/YOUTH': youthGeneral
+                });
+            });
+
+        // Add Village Name In First Row Only 
+        csvJSONData[0] = { 'Village Name': selectedVillageName, ...csvJSONData[0] }
+
+        //===== Parse Json to CSV ======//
+        try {
+            const parser = new Parser();
+            const csv = parser.parse(csvJSONData);
+
+            const fileSuffix = new Date(Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+            const fileName = selectedVillageName + '-' + fileSuffix + '.csv';
+            csvDownlodHelper(csv, 'text/plain', fileName)
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     return (
         <>
             <CustomAppBar
@@ -149,33 +211,49 @@ function Dashboard(props) {
             }
 
             {
-                !isLoadingPartyPeoples && !isVillageSelected &&
-                <FullScreenMessageText >
-                    Please Select Any Village
-                </FullScreenMessageText>
+                !isLoadingPartyPeoples && !isVillageSelected
+                    ?
+                    <FullScreenMessageText >
+                        Please Select Any Village
+                    </FullScreenMessageText>
+                    :
+                    <>
+                        <TabPanel value={selectedTabBarIndex} index={0}>
+                            {(partyPeoples && partyPeoples.partyMembers.length > 0)
+                                ? <PartyMembersView
+                                    selectedVillageKey={selectedVillageKey}
+                                    partyPeopleKey={partyPeoples.partyPeopleKey}
+                                    members={partyPeoples.partyMembers}
+                                    openContactDrawer={openContactDrawer}
+                                    setPartyPeoples={setPartyPeoples}
+                                />
+                                : <FullScreenMessageText >  No Data </FullScreenMessageText>
+                            }
+                        </TabPanel>
+
+                        <TabPanel value={selectedTabBarIndex} index={1}>
+                            {(partyPeoples && partyPeoples.generalMembers.length > 0)
+                                ? <GeneralMembersView
+                                    members={partyPeoples.generalMembers}
+                                    openContactDrawer={openContactDrawer} />
+                                : <FullScreenMessageText >  No Data </FullScreenMessageText>
+                            }
+                        </TabPanel>
+
+                        {
+                            partyPeoples &&
+                            <Box
+                                mt={2}
+                                display="grid"
+                                justifyContent="center"
+                                alignItems="center"
+                                minWidth="100%"
+                            >
+                                <Button onClick={downloadCSVFile}>Downnload <Download /></Button>
+                            </Box>
+                        }
+                    </>
             }
-
-            <TabPanel value={selectedTabBarIndex} index={0}>
-                {(partyPeoples && partyPeoples.partyMembers.length > 0)
-                    ? <PartyMembersView
-                        selectedVillageKey={selectedVillageKey}
-                        partyPeopleKey={partyPeoples.partyPeopleKey}
-                        members={partyPeoples.partyMembers}
-                        openContactDrawer={openContactDrawer}
-                        setPartyPeoples={setPartyPeoples}
-                    />
-                    : <FullScreenMessageText >  No Data </FullScreenMessageText>
-                }
-            </TabPanel>
-
-            <TabPanel value={selectedTabBarIndex} index={1}>
-                {(partyPeoples && partyPeoples.generalMembers.length > 0)
-                    ? <GeneralMembersView
-                        members={partyPeoples.generalMembers}
-                        openContactDrawer={openContactDrawer} />
-                    : <FullScreenMessageText >  No Data </FullScreenMessageText>
-                }
-            </TabPanel>
 
             <Drawer
                 anchor={'bottom'}
