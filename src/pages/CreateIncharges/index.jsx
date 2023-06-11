@@ -56,7 +56,7 @@ function CreateIncharges(props) {
         const allVillages = [];
 
         inputCSVLines.forEach(lineItem => {
-            if (lineItem[0] !== '') allEmails.push(lineItem[0]);
+            if (lineItem[0] !== '') allEmails.push(String(lineItem[0]).toLowerCase());
             if (lineItem[1] !== '') allVillages.push(lineItem[1]);
         });
 
@@ -114,7 +114,12 @@ function CreateIncharges(props) {
         inputCSVLines.forEach(lineItem => {
             if (lineItem[0] !== '') {
                 index++
-                userVillageMappings[index] = { email: lineItem[0], villages: [], progressStatus: '', toolTipMessge: '' };
+                userVillageMappings[index] = {
+                    email: String(lineItem[0]).toLowerCase(),
+                    villages: [],
+                    progressStatus: '',
+                    toolTipMessge: ''
+                };
             }
 
             if (lineItem[1] !== '') {

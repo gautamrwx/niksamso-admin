@@ -21,7 +21,7 @@ function NewEmailInput({
     const handleInputEmailChange = (event) => {
         const name = event.target.name;
         const value = event.target.value;
-        setInputNewEmail(values => ({ ...values, [name]: value }))
+        setInputNewEmail(values => ({ ...values, [name]: String(value).toLowerCase() }))
     }
 
     const handleNewPasswordSubmit = (event) => {
