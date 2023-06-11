@@ -319,7 +319,7 @@ function CreateIncharges(props) {
                             <Paper style={{ maxHeight: 400, overflow: 'auto', boxShadow: 'none' }}>
                                 <Box sx={{ m: 2 }}>
                                     {preparedUploadData.map(currUploadData =>
-                                        <Box display={'flex'} sx={{ pt: 2, p: 1 }}>
+                                        <Box key={currUploadData.email} display={'flex'} sx={{ pt: 2, p: 1 }}>
                                             <Typography flex={1}>
                                                 {currUploadData.email}
                                             </Typography>
