@@ -58,13 +58,13 @@ export default function VillageCard({
                                 {
                                     villageData.mappedPartyPeoplesKey !== ''
                                         ? <UploadButton
-                                            IconName={Replay}
+                                            iconType={'Replay'}
                                             onFileChange={handleVillageMembersCSVReUpload}
                                         >
                                             Re Upload
                                         </UploadButton>
                                         : <UploadButton
-                                            IconName={Upload}
+                                            iconType={'Upload'}
                                             onFileChange={handleVillageMembersCSVUpload}
                                         >
                                             Upload

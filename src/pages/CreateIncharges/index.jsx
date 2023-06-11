@@ -275,7 +275,7 @@ function CreateIncharges(props) {
                 >
                     <Box>
                         <Button
-                            variant="outlined"
+                            variant="contained"
                             component="label"
                         >
                             <Typography>Upload CSV</Typography>

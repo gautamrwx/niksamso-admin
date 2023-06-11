@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Modal, Popper, TextField, Typography } from "@mui/material";
+import { Autocomplete, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Modal, Popper, TextField, Typography } from "@mui/material";
 import { useUsersAndVillages } from "../../context/usersAndVillages.context";
 import { useEffect, useState } from "react";
 import { ref, update } from "firebase/database";
@@ -139,19 +139,23 @@ export default function EditVillageModal({
                     <Button
                         sx={{ mt: 2 }}
                         fullWidth
-                        variant="outlined"
+                        variant="contained"
                         disabled={!selectedIncharge}
                         onClick={handleVillageInchargeChange}
                     >
                         Assign New Incharge
                     </Button>
 
+                    <Divider sx={{ mt: 2 }}>
+                        <Chip label="OR" />
+                    </Divider>
+
                     <Box>
                         <Button
                             color="error"
                             sx={{ mt: 2 }}
                             fullWidth
-                            variant="outlined"
+                            variant="contained"
                             onClick={() => { setEraseDataConfrimation(true) }}>
                             Erase Assigned Members <AutoFixHigh />
                         </Button>

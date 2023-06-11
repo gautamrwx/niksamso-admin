@@ -1,5 +1,5 @@
 import { Avatar, Box, Button, Card, CardActions, CardContent, Grid, IconButton, LinearProgress, Typography } from '@mui/material';
-import { ListAlt, Sync } from '@mui/icons-material';
+import { ListAlt, PersonAdd, Sync } from '@mui/icons-material';
 
 export default function InchargeCardGrid({
     inchargeData,
@@ -30,7 +30,7 @@ export default function InchargeCardGrid({
                         <Typography color={'#415468'} fontWeight='bold'>
                             {inchargeData.fullName}
                         </Typography>
-                        <Typography color={'#415468'}>
+                        <Typography noWrap color={'#415468'}>
                             {inchargeData.email}
                         </Typography>
                     </Box>
@@ -53,11 +53,12 @@ export default function InchargeCardGrid({
                                     ? <LinearProgress />
                                     : <Button
                                         onClick={showEmailInputPopup}
-                                        variant="outlined"
+                                        variant="contained"
                                         component="label"
                                     >
-                                        <Typography mr='1' fontSize={12} >Assign New User</Typography>
-                                        <Sync />
+                                        <PersonAdd />
+                                        <Typography display={{ xs: 'none', sm: 'flex' }} ml={2} fontSize={12} >Assign New User</Typography>
+
                                     </Button>
                             }
                         </Box>
